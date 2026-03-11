@@ -24,9 +24,14 @@ import {
   readAvatarMappingFromStorage,
   saveAvatarMappingToStorage,
 } from "@/lib/office/avatarGenerator";
+import type { Agent, Task } from "@/types";
+
+const EMPTY_AGENTS: Agent[] = [];
+const EMPTY_TASKS: Task[] = [];
 
 export default function OfficePage() {
   const [generatingAgentId, setGeneratingAgentId] = useState<string | null>(null);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
 
   const selectedAgentId = useOfficeStore((s) => s.selectedAgentId);
   const agentPositions = useOfficeStore((s) => s.agentPositions);
@@ -37,17 +42,20 @@ export default function OfficePage() {
   const setAvatar = useOfficeStore((s) => s.setAvatar);
   const hydrateAvatarMapping = useOfficeStore((s) => s.hydrateAvatarMapping);
 
-  const { data: agents = [], isLoading: agentsLoading } = useQuery({
+  const { data: agentsData, isLoading: agentsLoading } = useQuery({
     queryKey: ["office-agents"],
     queryFn: getAgents,
     refetchInterval: 12_000,
   });
 
-  const { data: tasks = [] } = useQuery({
+  const { data: tasksData } = useQuery({
     queryKey: ["office-tasks"],
     queryFn: getTasks,
     refetchInterval: 12_000,
   });
+
+  const agents = agentsData ?? EMPTY_AGENTS;
+  const tasks = tasksData ?? EMPTY_TASKS;
 
   useEffect(() => {
     hydrateAvatarMapping(readAvatarMappingFromStorage());
@@ -101,10 +109,23 @@ export default function OfficePage() {
     return (pos?.waypointZone ?? pos?.targetZone ?? selected.targetZone) as ZoneId;
   }, [agentPositions, selected]);
 
+  const selectedAssignedTasks = useMemo(() => {
+    if (!selected) return [];
+
+    return tasks.filter((task) => {
+      return (
+        task.assignedAgentId === selected.agent.id ||
+        task.ownerAgentId === selected.agent.id ||
+        task.assignedAgent?.id === selected.agent.id
+      );
+    });
+  }, [selected, tasks]);
+
   const handleGenerateAvatar = async () => {
     if (!selected) return;
 
     setGeneratingAgentId(selected.agent.id);
+    setAvatarError(null);
     try {
       const { avatarUrl, prompt } = await generateAvatar(selected.agent);
       await persistAvatar(selected.agent.id, avatarUrl, prompt);
@@ -115,6 +136,8 @@ export default function OfficePage() {
         [selected.agent.id]: avatarUrl,
       };
       saveAvatarMappingToStorage(nextMapping);
+    } catch (err) {
+      setAvatarError(err instanceof Error ? err.message : "Failed to generate avatar");
     } finally {
       setGeneratingAgentId(null);
     }
@@ -132,10 +155,10 @@ export default function OfficePage() {
         </div>
       </header>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_360px]">
-        <section>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[2fr_1fr_1fr]">
+        <section className="lg:h-[78vh] lg:min-h-[560px]">
           {agentsLoading ? (
-            <div className="flex h-[78vh] min-h-[560px] items-center justify-center rounded-xl border border-surface-700 bg-surface-900 text-sm text-slate-400">
+            <div className="flex h-full items-center justify-center rounded-xl border border-surface-700 bg-surface-900 text-sm text-slate-400">
               Loading office scene...
             </div>
           ) : (
@@ -147,18 +170,23 @@ export default function OfficePage() {
           )}
         </section>
 
-        <aside className="flex min-h-0 flex-col gap-4">
+        <section className="min-h-0 lg:h-[78vh] lg:min-h-[560px]">
           <AgentInspector
             agent={selected?.agent ?? null}
             task={selected?.task ?? null}
+            assignedTasks={selectedAssignedTasks}
             zone={selectedZone}
             state={selected?.sceneState ?? null}
             avatarUrl={selected ? avatarMapping[selected.agent.id] : undefined}
             generating={generatingAgentId === selected?.agent.id}
+            avatarError={avatarError}
             onGenerateAvatar={handleGenerateAvatar}
           />
+        </section>
+
+        <section className="min-h-0 lg:h-[78vh] lg:min-h-[560px]">
           <ActivityPanel selectedAgentId={selectedAgentId} />
-        </aside>
+        </section>
       </div>
     </div>
   );

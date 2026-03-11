@@ -39,6 +39,7 @@ export const useOfficeStore = create<OfficeStoreState>((set) => ({
   syncAgentTargets: (targets) =>
     set((state) => {
       const next: Record<string, AgentPositionState> = { ...state.agentPositions };
+      let changed = false;
 
       Object.entries(targets).forEach(([agentId, targetZone]) => {
         const existing = next[agentId];
@@ -50,6 +51,7 @@ export const useOfficeStore = create<OfficeStoreState>((set) => ({
             waypointZone: null,
             isMoving: false,
           };
+          changed = true;
           return;
         }
 
@@ -59,6 +61,7 @@ export const useOfficeStore = create<OfficeStoreState>((set) => ({
               ...existing,
               targetZone,
             };
+            changed = true;
           }
           return;
         }
@@ -70,12 +73,18 @@ export const useOfficeStore = create<OfficeStoreState>((set) => ({
             waypointZone: "hallway",
             isMoving: true,
           };
+          changed = true;
         }
       });
 
       Object.keys(next).forEach((agentId) => {
-        if (!targets[agentId]) delete next[agentId];
+        if (!targets[agentId]) {
+          delete next[agentId];
+          changed = true;
+        }
       });
+
+      if (!changed) return state;
 
       return { agentPositions: next };
     }),

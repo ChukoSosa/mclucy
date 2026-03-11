@@ -2,43 +2,32 @@ import type { Agent } from "@/types";
 import { apiFetch } from "@/lib/api/client";
 
 export const AVATAR_STORAGE_KEY = "mission-control-agent-avatars";
+export function buildAvatarPrompt(_agent: Agent): string {
+  return `minimalist pixel art character, full body sprite, very large chunky pixels, retro 8-bit npc style, flat colors, no shading, simple geometric shapes, square pixel grid, limited palette, simple dot eyes, minimal mouth, clean outline, centered character.
 
-function getRolePrompt(agent: Agent): string {
-  const name = (agent.name ?? "").toLowerCase();
+character: operations manager woman wearing a yellow jacket, confident posture.
 
-  if (name.includes("claudio")) {
-    return "character: project manager developer, wearing a brown hat and glasses, blue shirt, holding a small clipboard, calm expression, organized tech leader vibe.";
-  }
+solid pastel background.
 
-  if (name.includes("codi")) {
-    return "character: frontend developer designer, colorful hair, headphones, casual shirt, creative tech vibe.";
-  }
+randomize hair style, hair color, clothing colors, accessories.
 
-  if (name.includes("ninja")) {
-    return "character: backend developer ninja, dark hoodie or ninja outfit, mysterious hacker vibe.";
-  }
-
-  if (name.includes("lucy")) {
-    return "character: operations manager woman, yellow jacket, confident posture.";
-  }
-
-  const role = (agent.role ?? "").trim() || "tech operator";
-  return `character: ${role}, focused posture, professional mission control vibe.`;
+same pixel art style, same proportions, same scale, same pixel size.`;
 }
 
-export function buildAvatarPrompt(agent: Agent): string {
-  const base =
-    "minimalist pixel art character, full body, very large pixels, 8-bit style, flat colors, no shading, simple geometric shapes, retro npc style, limited color palette, square pixel grid.";
-  const style =
-    "same pixel art style, same proportions, same scale, same pixel size, centered character, simple eyes and mouth, solid muted blue background.";
+async function callGenerateAvatarApi(prompt: string): Promise<string> {
+  const res = await fetch("/api/generate-avatar", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ prompt }),
+  });
 
-  return [base, getRolePrompt(agent), style].join("\n\n");
-}
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error((err as { error?: string }).error ?? `Avatar generation failed (${res.status})`);
+  }
 
-async function callNanoBananaStub(prompt: string, seed: string): Promise<string> {
-  void prompt;
-  const encodedSeed = encodeURIComponent(seed);
-  return `https://api.dicebear.com/9.x/pixel-art/svg?seed=${encodedSeed}&backgroundColor=1e2e45`;
+  const { avatarUrl } = await res.json();
+  return avatarUrl as string;
 }
 
 export function readAvatarMappingFromStorage(): Record<string, string> {
@@ -78,6 +67,6 @@ export async function persistAvatar(agentId: string, avatarUrl: string, prompt: 
 
 export async function generateAvatar(agent: Agent): Promise<{ avatarUrl: string; prompt: string }> {
   const prompt = buildAvatarPrompt(agent);
-  const avatarUrl = await callNanoBananaStub(prompt, `${agent.id}-${agent.name}`);
+  const avatarUrl = await callGenerateAvatarApi(prompt);
   return { avatarUrl, prompt };
 }

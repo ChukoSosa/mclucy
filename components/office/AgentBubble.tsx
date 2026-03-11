@@ -51,9 +51,9 @@ function AgentBubbleComponent({
             src={avatarUrl}
             alt={`${agent.name} avatar`}
             width={56}
-            height={56}
+            height={112}
             unoptimized
-            className="h-full w-full rounded-full object-cover image-rendering-pixelated"
+            className="h-full w-full rounded-full object-cover object-top image-rendering-pixelated"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center rounded-full bg-surface-800 text-xs font-bold text-cyan-300">

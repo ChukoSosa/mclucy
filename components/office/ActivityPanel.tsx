@@ -20,7 +20,7 @@ export function ActivityPanel({ selectedAgentId }: ActivityPanelProps) {
   const activity = useMemo(() => data ?? [], [data]);
 
   return (
-    <Card title="Activity Feed" className="h-[42vh] min-h-[280px]" bodyClassName="space-y-2">
+    <Card title="Activity Feed" className="h-full" bodyClassName="space-y-2">
       {isLoading && <p className="text-xs text-slate-400">Loading activity...</p>}
       {isError && <p className="text-xs text-accent-red">Failed to load activity.</p>}
       {!isLoading && !isError && activity.length === 0 && (
