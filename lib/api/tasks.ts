@@ -97,3 +97,7 @@ export async function addTaskComment(taskId: string, input: CreateTaskCommentInp
 
   return parsed.data;
 }
+
+export async function deleteTask(taskId: string): Promise<void> {
+  await apiFetch<unknown>(`/api/tasks/${taskId}`, { method: "DELETE" });
+}

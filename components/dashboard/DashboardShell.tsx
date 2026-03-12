@@ -13,6 +13,7 @@ import { useOnboardingState } from "@/lib/utils/useOnboardingState";
 interface DashboardShellProps {
   children: React.ReactNode;
   showFilters?: boolean;
+  topBar?: React.ReactNode;
 }
 
 const NAV_ITEMS = [
@@ -21,7 +22,7 @@ const NAV_ITEMS = [
   { href: "/office", label: "Office" },
 ];
 
-export function DashboardShell({ children, showFilters = true }: DashboardShellProps) {
+export function DashboardShell({ children, showFilters = true, topBar }: DashboardShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { hasSeenOnboarding, isReady } = useOnboardingState();
@@ -74,6 +75,7 @@ export function DashboardShell({ children, showFilters = true }: DashboardShellP
 
       <div className="shrink-0 px-6 pt-4">
         <SummaryBar />
+        {topBar}
         {showFilters && <FiltersBar />}
       </div>
 
