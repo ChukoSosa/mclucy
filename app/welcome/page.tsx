@@ -214,6 +214,11 @@ export default function WelcomePage() {
     router.push("/overview");
   };
 
+  const handleChooseLicensePlan = () => {
+    setShowLicenseModal(false);
+    router.push("/thank-you");
+  };
+
   return (
     <div className="min-h-screen bg-surface-950 text-slate-100">
       <div className="mx-auto flex w-full max-w-[1400px] gap-6 px-6 py-6 lg:py-8">
@@ -640,7 +645,7 @@ export default function WelcomePage() {
                     </div>
 
                     <button
-                      onClick={() => setShowLicenseModal(false)}
+                      onClick={handleChooseLicensePlan}
                       className="w-full rounded-lg border border-amber-500/40 bg-amber-500/15 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-500/25"
                     >
                       Choose {plan.name}
