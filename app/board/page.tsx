@@ -8,6 +8,7 @@ import { faBoxArchive } from "@fortawesome/free-solid-svg-icons";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { TaskDetailPanel } from "@/components/dashboard/TaskDetailPanel";
 import { CreateTaskModal } from "@/components/dashboard/CreateTaskModal";
+import { PipelineBoard } from "@/components/dashboard/PipelineBoard";
 import { Card, EmptyState, ErrorMessage, SkeletonList, StatusBadge } from "@/components/ui";
 import { deleteTask, archiveTask, getTasks } from "@/lib/api/tasks";
 import { getSlaAlerts } from "@/lib/api/sla";
@@ -31,6 +32,7 @@ export default function BoardPage() {
   const [isDeletingTask, setIsDeletingTask] = useState(false);
     const [confirmArchiveFromModal, setConfirmArchiveFromModal] = useState(false);
     const [isArchivingTask, setIsArchivingTask] = useState(false);
+  const [boardView, setBoardView] = useState<"kanban" | "pipelines">("kanban");
   const queryClient = useQueryClient();
 
   const handleOpenCreate = useCallback(() => {
@@ -151,6 +153,37 @@ export default function BoardPage() {
   return (
     <DashboardShell>
       <div className="h-full min-h-0">
+        {/* View toggle */}
+        <div className="flex items-center gap-2 mb-3">
+          <button
+            onClick={() => setBoardView("kanban")}
+            className={`rounded border px-3 py-1 text-xs font-semibold transition-colors ${
+              boardView === "kanban"
+                ? "border-cyan-500/50 bg-cyan-500/15 text-cyan-300"
+                : "border-surface-700 bg-surface-800 text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            Kanban
+          </button>
+          <button
+            onClick={() => setBoardView("pipelines")}
+            className={`rounded border px-3 py-1 text-xs font-semibold transition-colors ${
+              boardView === "pipelines"
+                ? "border-cyan-500/50 bg-cyan-500/15 text-cyan-300"
+                : "border-surface-700 bg-surface-800 text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            Pipelines
+          </button>
+        </div>
+
+        {boardView === "pipelines" && (
+          <div className="overflow-y-auto h-[calc(100%-44px)]">
+            <PipelineBoard />
+          </div>
+        )}
+
+        {boardView === "kanban" && (<>
         {isLoading && <SkeletonList rows={6} />}
         {isError && <ErrorMessage message="Failed to load board tasks" />}
         {!isLoading && !isError && filteredTasks.length === 0 && (
@@ -237,6 +270,7 @@ export default function BoardPage() {
             </div>
           </div>
         )}
+        </>)}
       </div>
 
       {selectedTaskId && (

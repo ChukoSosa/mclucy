@@ -5,6 +5,13 @@ export const AssignedAgentSchema = z.object({
   name: z.string(),
 });
 
+export const PipelineStageRefSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  position: z.number().optional(),
+  pipelineId: z.string().optional(),
+});
+
 export const TaskSchema = z.object({
   id: z.string(),
   title: z.string(),
@@ -16,10 +23,13 @@ export const TaskSchema = z.object({
   updatedAt: z.string().optional(),
   description: z.string().nullable().optional(),
   archivedAt: z.string().nullable().optional(),
+  pipelineStageId: z.string().nullable().optional(),
+  pipelineStage: PipelineStageRefSchema.nullable().optional(),
 }).passthrough();
 
 export type Task = z.infer<typeof TaskSchema>;
 export type AssignedAgent = z.infer<typeof AssignedAgentSchema>;
+export type PipelineStageRef = z.infer<typeof PipelineStageRefSchema>;
 
 export const TasksResponseSchema = z.object({
   tasks: z.array(TaskSchema),
