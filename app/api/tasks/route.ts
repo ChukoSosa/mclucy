@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, description, assignedAgentId, status, priority } = body;
+    const { title, description, assignedAgentId, status, priority, pipelineStageId } = body;
 
     if (!title) {
       return NextResponse.json({ error: "title is required" }, { status: 400 });
@@ -40,6 +40,7 @@ export async function POST(request: NextRequest) {
       assignedAgentId,
       status,
       priority,
+      pipelineStageId,
     });
 
     return NextResponse.json(task, { status: 201 });
