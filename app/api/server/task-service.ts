@@ -26,6 +26,7 @@ export const taskService = {
     const tasks = await prisma.task.findMany({
       include: {
         assignedAgent: { select: { id: true, name: true } },
+        pipelineStage: { select: { id: true, name: true, position: true, pipelineId: true } },
       },
       where,
       cursor: options?.cursor ? { id: options.cursor } : undefined,
@@ -66,6 +67,7 @@ export const taskService = {
     assignedAgentId?: string;
     status?: string;
     priority?: number;
+    pipelineStageId?: string;
   }) {
     if (typeof data.priority === "number" && (data.priority < 1 || data.priority > 5)) {
       throw new ApiError(400, "VALIDATION_ERROR", "Priority must be between 1 and 5");
@@ -78,6 +80,13 @@ export const taskService = {
       }
     }
 
+    if (data.pipelineStageId) {
+      const stage = await prisma.pipelineStage.findUnique({ where: { id: data.pipelineStageId }, select: { id: true } });
+      if (!stage) {
+        throw new ApiError(400, "BAD_REQUEST", "Pipeline stage does not exist");
+      }
+    }
+
     const task = await prisma.task.create({
       data: {
         title: data.title,
@@ -87,9 +96,11 @@ export const taskService = {
         createdByType: "operator",
         createdById: "operator-root",
         assignedAgentId: data.assignedAgentId,
+        pipelineStageId: data.pipelineStageId,
       },
       include: {
         assignedAgent: { select: { id: true, name: true } },
+        pipelineStage: { select: { id: true, name: true, position: true, pipelineId: true } },
       },
     });
 

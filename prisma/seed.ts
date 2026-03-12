@@ -7,6 +7,14 @@ const prisma = new PrismaClient();
 const OPENCLAW_AGENT_ID = "agent-openclaw";
 const ONBOARDING_TASK_ID = "task-onboarding-installation";
 
+const DISCOVERY_PIPELINE_ID = "pipeline-discovery";
+const DISCOVERY_STAGES = [
+  { id: "stage-discovery-backlog",      name: "Backlog",     position: 1 },
+  { id: "stage-discovery-in-progress",  name: "In Progress", position: 2 },
+  { id: "stage-discovery-review",       name: "Review",      position: 3 },
+  { id: "stage-discovery-done",         name: "Done",        position: 4 },
+];
+
 function loadAgentPrompt(): string {
   const promptPath = path.join(__dirname, "../docs/OPENCLAW-AGENT-PROMPT.md");
   if (fs.existsSync(promptPath)) {
@@ -35,6 +43,28 @@ async function main() {
   await prisma.task.deleteMany();
   await prisma.agentRoutine.deleteMany();
   await prisma.agent.deleteMany({});
+  await prisma.pipelineStage.deleteMany();
+  await prisma.pipeline.deleteMany();
+
+  // ── Discovery Pipeline ───────────────────────────────────────────────────
+  await prisma.pipeline.upsert({
+    where: { id: DISCOVERY_PIPELINE_ID },
+    update: { name: "Discovery", type: "discovery", description: "Standard discovery workflow for new initiatives" },
+    create: {
+      id: DISCOVERY_PIPELINE_ID,
+      name: "Discovery",
+      type: "discovery",
+      description: "Standard discovery workflow for new initiatives",
+    },
+  });
+
+  for (const stage of DISCOVERY_STAGES) {
+    await prisma.pipelineStage.upsert({
+      where: { id: stage.id },
+      update: { name: stage.name, position: stage.position, pipelineId: DISCOVERY_PIPELINE_ID },
+      create: { id: stage.id, name: stage.name, position: stage.position, pipelineId: DISCOVERY_PIPELINE_ID },
+    });
+  }
 
   const openClaw = await prisma.agent.upsert({
     where: { id: OPENCLAW_AGENT_ID },
@@ -140,7 +170,82 @@ async function main() {
       },
     ],
   });
-}
+
+  // ── Discovery pipeline seed tasks ─────────────────────────────────────────
+  const discoveryTasks: Array<{
+    id: string;
+    title: string;
+    description: string;
+    status: "BACKLOG" | "IN_PROGRESS" | "REVIEW" | "DONE";
+    priority: number;
+    pipelineStageId: string;
+  }> = [
+    {
+      id: "task-discovery-1",
+      title: "Define product vision and goals",
+      description: "Align stakeholders on the product vision, target users, and success metrics.",
+      status: "BACKLOG",
+      priority: 1,
+      pipelineStageId: "stage-discovery-backlog",
+    },
+    {
+      id: "task-discovery-2",
+      title: "User research interviews",
+      description: "Conduct 5–8 structured interviews with target personas to surface pain points.",
+      status: "IN_PROGRESS",
+      priority: 2,
+      pipelineStageId: "stage-discovery-in-progress",
+    },
+    {
+      id: "task-discovery-3",
+      title: "Competitive landscape analysis",
+      description: "Map existing solutions, identify whitespace, and document differentiators.",
+      status: "IN_PROGRESS",
+      priority: 2,
+      pipelineStageId: "stage-discovery-in-progress",
+    },
+    {
+      id: "task-discovery-4",
+      title: "Problem statement synthesis",
+      description: "Synthesize research findings into a clear, validated problem statement.",
+      status: "REVIEW",
+      priority: 1,
+      pipelineStageId: "stage-discovery-review",
+    },
+    {
+      id: "task-discovery-5",
+      title: "Opportunity sizing",
+      description: "Estimate TAM/SAM and validate market size assumptions with data.",
+      status: "DONE",
+      priority: 3,
+      pipelineStageId: "stage-discovery-done",
+    },
+  ];
+
+  for (const t of discoveryTasks) {
+    await prisma.task.upsert({
+      where: { id: t.id },
+      update: {
+        title: t.title,
+        description: t.description,
+        status: t.status,
+        priority: t.priority,
+        pipelineStageId: t.pipelineStageId,
+        assignedAgentId: openClaw.id,
+      },
+      create: {
+        id: t.id,
+        title: t.title,
+        description: t.description,
+        status: t.status,
+        priority: t.priority,
+        pipelineStageId: t.pipelineStageId,
+        createdByType: "operator",
+        createdById: operator.id,
+        assignedAgentId: openClaw.id,
+      },
+    });
+  }
 
 main()
   .catch((error) => {
