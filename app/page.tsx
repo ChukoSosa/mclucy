@@ -2,15 +2,18 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { readOnboardingSeen } from "@/lib/utils/useOnboardingState";
+import { useOnboardingState } from "@/lib/utils/useOnboardingState";
 
 export default function Home() {
   const router = useRouter();
+  const { hasSeenOnboarding, isReady } = useOnboardingState();
 
   useEffect(() => {
-    const destination = readOnboardingSeen() ? "/overview" : "/welcome";
+    if (!isReady) return;
+
+    const destination = hasSeenOnboarding ? "/overview" : "/welcome";
     router.replace(destination);
-  }, [router]);
+  }, [hasSeenOnboarding, isReady, router]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-surface-950 text-slate-400">

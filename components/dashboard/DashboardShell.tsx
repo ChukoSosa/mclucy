@@ -1,12 +1,14 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBullseye } from "@fortawesome/free-solid-svg-icons";
 import { SummaryBar } from "@/components/dashboard/SummaryBar";
 import { FiltersBar } from "@/components/dashboard/FiltersBar";
 import { cn } from "@/lib/utils/cn";
+import { useOnboardingState } from "@/lib/utils/useOnboardingState";
 
 interface DashboardShellProps {
   children: React.ReactNode;
@@ -21,6 +23,22 @@ const NAV_ITEMS = [
 
 export function DashboardShell({ children, showFilters = true }: DashboardShellProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { hasSeenOnboarding, isReady } = useOnboardingState();
+
+  useEffect(() => {
+    if (!isReady) return;
+    if (hasSeenOnboarding) return;
+    router.replace("/welcome");
+  }, [hasSeenOnboarding, isReady, router]);
+
+  if (!isReady) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-surface-950 text-slate-400">
+        <p className="text-xs uppercase tracking-widest">Preparing Mission Control...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-surface-950 flex flex-col">
