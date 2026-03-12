@@ -29,6 +29,7 @@ export function DashboardShell({ children, showFilters = true, topBar }: Dashboa
 
   useEffect(() => {
     if (!isReady) return;
+
     if (hasSeenOnboarding) return;
     router.replace("/welcome");
   }, [hasSeenOnboarding, isReady, router]);

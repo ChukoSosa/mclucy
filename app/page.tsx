@@ -11,9 +11,9 @@ export default function Home() {
   useEffect(() => {
     if (!isReady) return;
 
-    const destination = hasSeenOnboarding ? "/overview" : "/welcome";
-    router.replace(destination);
-  }, [hasSeenOnboarding, isReady, router]);
+    // Always navigate to overview (system is always ready)
+    router.replace("/overview");
+  }, [isReady, router]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-surface-950 text-slate-400">

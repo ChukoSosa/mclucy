@@ -55,6 +55,7 @@ async function ensureOnboardingSubtasks(taskId: string): Promise<number> {
   }
 
   await prisma.subtask.createMany({ data: toCreate });
+
   return toCreate.length;
 }
 
@@ -65,54 +66,55 @@ async function findExistingOnboardingTask(): Promise<{ id: string } | null> {
   });
 }
 
-async function shouldMarkReady(taskId: string): Promise<boolean> {
-  const total = await prisma.subtask.count({ where: { taskId } });
-  if (total === 0) return false;
-
-  const done = await prisma.subtask.count({ where: { taskId, status: "DONE" } });
-  return done === total;
-}
-
 async function runBootstrapMissionControl(): Promise<MissionBootstrapResult> {
   const warnings: string[] = [];
 
   try {
-    if (isMissionSystemReady(getMissionSystemState())) {
+    // Check if bootstrap task already exists (marker that system was initialized)
+    const existingTask = await findExistingOnboardingTask();
+    console.log("[BOOTSTRAP] Check existing task:", existingTask ? `Found ${existingTask.id}` : "Not found");
+    
+    if (existingTask) {
+      // System already initialized, just mark READY and return
+      const state = markMissionSystemReady();
+      console.log("[BOOTSTRAP] Already initialized, returning READY");
       return {
-        state: getMissionSystemState(),
+        state,
         skipped: true,
+        onboardingTaskId: existingTask.id,
         createdSubtasksCount: 0,
         warnings,
       };
     }
 
-    markMissionSystemBootstrapping();
+    // First time: create bootstrap task
+    console.log("[BOOTSTRAP] Creating new bootstrap task...");
+    const draftTask = createMissionControlOnboardingTask();
+    const createdTask = await taskService.create({
+      title: draftTask.title,
+      description: draftTask.description,
+      status: "BACKLOG",
+      priority: draftTask.priority ?? 1,
+    });
+    console.log("[BOOTSTRAP] Created task:", createdTask.id);
 
-    let onboardingTask = await findExistingOnboardingTask();
-    if (!onboardingTask) {
-      const draftTask = createMissionControlOnboardingTask();
-      const createdTask = await taskService.create({
-        title: draftTask.title,
-        description: draftTask.description,
-        status: "BACKLOG",
-        priority: draftTask.priority ?? 1,
-      });
-      onboardingTask = { id: createdTask.id };
-    }
+    // Create subtasks
+    const createdSubtasksCount = await ensureOnboardingSubtasks(createdTask.id);
+    console.log("[BOOTSTRAP] Created subtasks:", createdSubtasksCount);
 
-    const createdSubtasksCount = await ensureOnboardingSubtasks(onboardingTask.id);
-
-    const allDone = await shouldMarkReady(onboardingTask.id);
-    const state = allDone ? markMissionSystemReady() : markMissionSystemConfiguring();
+    // Bootstrap complete, mark READY
+    const state = markMissionSystemReady();
+    console.log("[BOOTSTRAP] Bootstrap complete, marked READY");
 
     return {
       state,
       skipped: false,
-      onboardingTaskId: onboardingTask.id,
+      onboardingTaskId: createdTask.id,
       createdSubtasksCount,
       warnings,
     };
   } catch (error) {
+    console.error("[BOOTSTRAP] ERROR:", error);
     const message = error instanceof Error ? error.message : "Unknown bootstrap error";
     warnings.push(`Bootstrap warning: ${message}`);
 

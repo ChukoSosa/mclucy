@@ -1,13 +1,13 @@
-export type MissionSystemLifecycleState = "BOOTSTRAPPING" | "CONFIGURING" | "READY";
+export type MissionSystemLifecycleState = "BOOTSTRAPPING" | "READY";
 
 export interface MissionSystemState {
   state: MissionSystemLifecycleState;
-  initializedAt?: string;
   version?: string;
 }
 
 export const MISSION_SYSTEM_STATE_VERSION = "mc-lucy-bootstrap-v1";
 
+// Default state before bootstrap completes
 let runtimeMissionSystemState: MissionSystemState = {
   state: "BOOTSTRAPPING",
   version: MISSION_SYSTEM_STATE_VERSION,
@@ -22,24 +22,9 @@ export function setMissionSystemState(next: MissionSystemState): MissionSystemSt
   return getMissionSystemState();
 }
 
-export function markMissionSystemBootstrapping(): MissionSystemState {
-  return setMissionSystemState({
-    state: "BOOTSTRAPPING",
-    version: MISSION_SYSTEM_STATE_VERSION,
-  });
-}
-
-export function markMissionSystemConfiguring(): MissionSystemState {
-  return setMissionSystemState({
-    state: "CONFIGURING",
-    version: MISSION_SYSTEM_STATE_VERSION,
-  });
-}
-
-export function markMissionSystemReady(initializedAt: string = new Date().toISOString()): MissionSystemState {
+export function markMissionSystemReady(): MissionSystemState {
   return setMissionSystemState({
     state: "READY",
-    initializedAt,
     version: MISSION_SYSTEM_STATE_VERSION,
   });
 }
