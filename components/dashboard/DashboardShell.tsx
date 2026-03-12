@@ -14,7 +14,7 @@ interface DashboardShellProps {
 }
 
 const NAV_ITEMS = [
-  { href: "/", label: "Overview" },
+  { href: "/overview", label: "Overview" },
   { href: "/board", label: "Board" },
   { href: "/office", label: "Office" },
 ];
@@ -25,17 +25,17 @@ export function DashboardShell({ children, showFilters = true }: DashboardShellP
   return (
     <div className="min-h-screen bg-surface-950 flex flex-col">
       <header className="shrink-0 border-b border-surface-700 bg-surface-900 px-6 py-3 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
+        <Link href="/welcome" className="group flex items-center gap-3 rounded-md px-1 py-1 hover:bg-surface-800">
           <FontAwesomeIcon icon={faBullseye} className="text-cyan-400 text-lg" />
           <div>
             <h1 className="text-sm font-bold tracking-widest uppercase text-slate-100">Mission Control</h1>
-            <p className="text-[10px] text-slate-500">Operational Dashboard · Phase I</p>
+            <p className="text-[10px] text-slate-500 group-hover:text-slate-400">Operational Dashboard · Phase I</p>
           </div>
-        </div>
+        </Link>
 
         <nav className="flex items-center gap-1 rounded-lg border border-surface-700 bg-surface-800 p-1">
           {NAV_ITEMS.map((item) => {
-            const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+            const active = pathname.startsWith(item.href);
             return (
               <Link
                 key={item.href}
