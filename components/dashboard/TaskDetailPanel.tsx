@@ -4,7 +4,9 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faClock, faChevronDown } from "@fortawesome/free-solid-svg-icons";
+import { faBoxArchive } from "@fortawesome/free-solid-svg-icons";
 import { getTasks, getTaskSubtasks, getTaskComments, addTaskComment } from "@/lib/api/tasks";
+import { archiveTask } from "@/lib/api/tasks";
 import { useDashboardStore } from "@/store/dashboardStore";
 import { Card, StatusBadge, SkeletonList, EmptyState, ErrorMessage } from "@/components/ui";
 import { fromNow } from "@/lib/utils/formatDate";
@@ -39,8 +41,11 @@ function getCommentStatus(comment: {
 
 export function TaskDetailPanel() {
   const selectedTaskId = useDashboardStore((s) => s.selectedTaskId);
+    const setSelectedTaskId = useDashboardStore((s) => s.setSelectedTaskId);
   const queryClient = useQueryClient();
   const [newComment, setNewComment] = useState("");
+    const [confirmArchive, setConfirmArchive] = useState(false);
+    const [isArchiving, setIsArchiving] = useState(false);
 
   const { data: tasks = [] } = useQuery({ queryKey: ["tasks"], queryFn: getTasks });
   const selectedTask = tasks.find((t) => t.id === selectedTaskId);
@@ -137,6 +142,41 @@ export function TaskDetailPanel() {
                 {selectedTask.description}
               </p>
             )}
+
+              {selectedTask.status === "DONE" && !selectedTask.archivedAt && (
+                <div className="flex items-center gap-2 pt-1">
+                  <button
+                    disabled={isArchiving}
+                    onClick={async () => {
+                      if (!confirmArchive) {
+                        setConfirmArchive(true);
+                        return;
+                      }
+                      setIsArchiving(true);
+                      try {
+                        await archiveTask(selectedTaskId!);
+                        setSelectedTaskId(null);
+                        await queryClient.invalidateQueries({ queryKey: ["tasks"] });
+                      } finally {
+                        setIsArchiving(false);
+                        setConfirmArchive(false);
+                      }
+                    }}
+                    className="rounded border border-amber-500/40 bg-amber-500/15 px-2 py-1 text-xs text-amber-300 hover:bg-amber-500/25 disabled:cursor-not-allowed disabled:opacity-50 flex items-center gap-1"
+                  >
+                    <FontAwesomeIcon icon={faBoxArchive} />
+                    {isArchiving ? "Archiving..." : confirmArchive ? "Confirm Archive" : "Archive"}
+                  </button>
+                  {confirmArchive && !isArchiving && (
+                    <button
+                      onClick={() => setConfirmArchive(false)}
+                      className="rounded border border-surface-700 bg-surface-800 px-2 py-1 text-xs text-slate-300 hover:bg-surface-700"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
+              )}
           </div>
 
           {/* Subtasks */}
