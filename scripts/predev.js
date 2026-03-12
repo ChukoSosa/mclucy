@@ -161,8 +161,24 @@ async function main() {
   LOG.step("4/4", "Seeding initial data");
   run("npx prisma db seed", "Database seeded");
 
+  // Step 5 — Generate OpenClaw bootstrap prompt file
+  LOG.step("5/5", "Generating OpenClaw bootstrap prompt");
+  const promptSrc = path.join(rootDir, "docs", "OPENCLAW-AGENT-PROMPT.md");
+  const bootstrapDest = path.join(rootDir, "OPENCLAW-BOOTSTRAP.txt");
+  if (fs.existsSync(promptSrc)) {
+    fs.copyFileSync(promptSrc, bootstrapDest);
+    LOG.ok("OPENCLAW-BOOTSTRAP.txt generated — paste this into OpenClaw as the system prompt");
+  } else {
+    LOG.warn("docs/OPENCLAW-AGENT-PROMPT.md not found — skipping bootstrap file generation");
+  }
+
   console.log(`\n${c.green}${"─".repeat(44)}`);
   console.log(`✨  Setup complete — starting MC Lucy on http://localhost:3001`);
+  console.log(`${"─".repeat(44)}`);
+  console.log(`\n  Next step for OpenClaw:`);
+  console.log(`  Paste the contents of OPENCLAW-BOOTSTRAP.txt`);
+  console.log(`  as OpenClaw's system prompt so it learns how`);
+  console.log(`  to connect and operate MC Lucy automatically.`);
   console.log(`${"─".repeat(44)}${c.reset}\n`);
 
   // Open browser after Next.js finishes booting (~12s).

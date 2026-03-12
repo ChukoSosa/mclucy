@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/api/server/prisma";
 import { apiErrorResponse } from "@/app/api/server/api-error";
+import { emitEvent } from "@/app/api/server/event-bus";
+import { activityService } from "@/app/api/server/activity-service";
+import { dispatchCommentReview } from "@/app/api/server/comment-automator";
 
 function clampLimit(value: string | null, fallback = 50) {
   const n = value ? Number.parseInt(value, 10) : fallback;
@@ -74,6 +77,40 @@ export async function POST(
           : "open",
         inReplyToId: typeof payload?.inReplyToId === "string" ? payload.inReplyToId : null,
       },
+    });
+
+    // Emit realtime event so all SSE-connected clients refresh immediately
+    emitEvent({
+      type: "task.comment.created",
+      data: {
+        commentId: comment.id,
+        taskId: params.id,
+        authorType: comment.authorType,
+        authorId: comment.authorId ?? null,
+        requiresResponse: comment.requiresResponse,
+        createdAt: comment.createdAt.toISOString(),
+      },
+    });
+
+    // Persist activity for audit trail and activity feed
+    await activityService.log({
+      kind: "task",
+      action: "comment.created",
+      summary: `Comment added to task ${params.id}`,
+      taskId: params.id,
+      payload: {
+        commentId: comment.id,
+        authorType: comment.authorType,
+        requiresResponse: comment.requiresResponse,
+      },
+    });
+
+    // Fire-and-forget: OpenClaw Main reviews comment and replies automatically
+    dispatchCommentReview({
+      taskId: params.id,
+      commentId: comment.id,
+      commentBody: comment.body,
+      authorType: comment.authorType,
     });
 
     return NextResponse.json(comment, { status: 201 });

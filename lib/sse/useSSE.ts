@@ -45,7 +45,14 @@ export function useSSE() {
       setStatus("error");
     });
 
-    const trackedEvents = ["activity.logged", "task.updated", "run.updated", "supervisor.kpis"];
+    const trackedEvents = [
+      "activity.logged",
+      "task.updated",
+      "run.updated",
+      "supervisor.kpis",
+      "task.comment.created",
+      "task.comment.answered",
+    ];
 
     const handlers = trackedEvents.map((name) => {
       const handler = (e: MessageEvent) => {
@@ -58,6 +65,19 @@ export function useSSE() {
         }
         if (name === "supervisor.kpis") {
           void queryClient.invalidateQueries({ queryKey: ["kpis"] });
+        }
+        if (name === "task.comment.created" || name === "task.comment.answered") {
+          try {
+            const raw = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
+            const payload = raw as { data?: { taskId?: string } };
+            const taskId = payload?.data?.taskId;
+            if (taskId) {
+              void queryClient.invalidateQueries({ queryKey: ["comments", taskId] });
+            }
+          } catch {
+            // ignore malformed event
+          }
+          void queryClient.invalidateQueries({ queryKey: ["activity"] });
         }
       };
       es.addEventListener(name, handler);

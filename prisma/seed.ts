@@ -1,9 +1,19 @@
 import { PrismaClient } from "@prisma/client";
+import * as fs from "fs";
+import * as path from "path";
 
 const prisma = new PrismaClient();
 
 const OPENCLAW_AGENT_ID = "agent-openclaw";
 const ONBOARDING_TASK_ID = "task-onboarding-installation";
+
+function loadAgentPrompt(): string {
+  const promptPath = path.join(__dirname, "../docs/OPENCLAW-AGENT-PROMPT.md");
+  if (fs.existsSync(promptPath)) {
+    return fs.readFileSync(promptPath, "utf-8");
+  }
+  return "Read docs/OPENCLAW-AGENT-PROMPT.md for full operating instructions.";
+}
 
 async function main() {
   const operator = await prisma.operator.upsert({
@@ -65,6 +75,24 @@ async function main() {
       createdById: operator.id,
       createdByType: "operator",
       assignedAgentId: openClaw.id,
+    },
+  });
+
+  // Post the agent operating prompt as the first comment on the onboarding task.
+  // OpenClaw reads this on first access and learns how to operate MC Lucy.
+  await prisma.taskComment.upsert({
+    where: { id: "comment-onboarding-agent-prompt" },
+    update: {
+      body: loadAgentPrompt(),
+    },
+    create: {
+      id: "comment-onboarding-agent-prompt",
+      taskId: ONBOARDING_TASK_ID,
+      authorType: "system",
+      authorId: "system",
+      body: loadAgentPrompt(),
+      requiresResponse: false,
+      status: "open",
     },
   });
 
