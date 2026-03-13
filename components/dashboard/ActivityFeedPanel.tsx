@@ -11,6 +11,7 @@ import { Card, SkeletonList, EmptyState, ErrorMessage } from "@/components/ui";
 import { fromNow } from "@/lib/utils/formatDate";
 import { cn } from "@/lib/utils/cn";
 import { getRealtimeRefetchInterval } from "@/lib/utils/demoMode";
+import { getActivityActorLabel, getActivityVisual } from "@/lib/activity/presentation";
 
 export function ActivityFeedPanel() {
   const activityLimit = useDashboardStore((s) => s.activityLimit);
@@ -130,43 +131,64 @@ export function ActivityFeedPanel() {
 
       {filteredActivity.length > 0 && (
         <div className="space-y-1">
-          {filteredActivity.map((item, idx) => (
-            <div
-              key={item.id ?? idx}
-              className="rounded border border-surface-700 bg-surface-800 p-2.5 space-y-1"
-            >
-              {(item.summary || item.type || item.event || item.action || item.kind) && (
-                <p className="text-xs text-slate-200 leading-snug flex gap-1.5">
-                  <FontAwesomeIcon icon={faBolt} className="text-amber-400 shrink-0 mt-0.5 text-[10px]" />
-                  <span>{item.summary ?? item.type ?? item.event ?? item.action ?? item.kind ?? "Activity event"}</span>
-                </p>
-              )}
+          {filteredActivity.map((item, idx) => {
+            const visual = getActivityVisual(item);
+            const actorLabel = getActivityActorLabel(item);
 
-              <div className="flex flex-wrap gap-2 text-[10px] text-slate-500">
-                {item.type && (
-                  <span className={cn("flex items-center gap-1")}>
-                    <FontAwesomeIcon icon={faTag} />
-                    {item.type}
+            return (
+              <div
+                key={item.id ?? idx}
+                className="rounded border border-surface-700 bg-surface-800 p-2.5 space-y-1.5"
+              >
+                <div className="flex flex-wrap items-center gap-2 text-[10px]">
+                  <span className={cn("inline-flex items-center gap-1 rounded border px-1.5 py-0.5 font-semibold uppercase tracking-wide", visual.badgeClassName)}>
+                    <FontAwesomeIcon icon={visual.icon} className="text-[9px]" />
+                    {visual.label}
                   </span>
+                  {actorLabel && (
+                    <span className="inline-flex items-center gap-1 rounded border border-surface-600 bg-surface-900 px-1.5 py-0.5 text-slate-300">
+                      <FontAwesomeIcon icon={faTag} className="text-[9px]" />
+                      {actorLabel}
+                    </span>
+                  )}
+                </div>
+
+                {(item.summary || item.type || item.event || item.action || item.kind) && (
+                  <p className="text-xs leading-snug flex gap-1.5">
+                    <FontAwesomeIcon icon={visual.icon} className={cn("shrink-0 mt-0.5 text-[10px]", visual.toneClassName)} />
+                    <span className="text-slate-200">{item.summary ?? item.type ?? item.event ?? item.action ?? item.kind ?? "Activity event"}</span>
+                  </p>
                 )}
-                {item.agentId && (
-                  <span className="truncate max-w-[100px]">agent: {item.agentId.slice(0, 8)}…</span>
-                )}
-                {item.taskId && (
-                  <span className="truncate max-w-[100px]">task: {item.taskId.slice(0, 8)}…</span>
-                )}
-                {item.runId && (
-                  <span className="truncate max-w-[100px]">run: {item.runId.slice(0, 8)}…</span>
-                )}
-                {(item.occurredAt || item.createdAt || item.timestamp || item.updatedAt) && (
-                  <span className="flex items-center gap-1 ml-auto">
-                    <FontAwesomeIcon icon={faClock} />
-                    {fromNow(item.occurredAt ?? item.createdAt ?? item.timestamp ?? item.updatedAt)}
-                  </span>
-                )}
+
+                <div className="flex flex-wrap gap-2 text-[10px] text-slate-500">
+                  {(item.type || item.action) && (
+                    <span className={cn("flex items-center gap-1")}>
+                      <FontAwesomeIcon icon={faTag} />
+                      {item.action ?? item.type}
+                    </span>
+                  )}
+                  {item.agentId && (
+                    <span className="truncate max-w-[100px]">agent: {item.agentId.slice(0, 8)}…</span>
+                  )}
+                  {item.taskId && (
+                    <span className="truncate max-w-[100px]">task: {item.taskId.slice(0, 8)}…</span>
+                  )}
+                  {item.subtaskId && (
+                    <span className="truncate max-w-[100px]">subtask: {item.subtaskId.slice(0, 8)}…</span>
+                  )}
+                  {item.runId && (
+                    <span className="truncate max-w-[100px]">run: {item.runId.slice(0, 8)}…</span>
+                  )}
+                  {(item.occurredAt || item.createdAt || item.timestamp || item.updatedAt) && (
+                    <span className="flex items-center gap-1 ml-auto">
+                      <FontAwesomeIcon icon={faClock} />
+                      {fromNow(item.occurredAt ?? item.createdAt ?? item.timestamp ?? item.updatedAt)}
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </Card>

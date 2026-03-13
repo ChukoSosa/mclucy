@@ -6,6 +6,12 @@ import { activityService } from "@/app/api/server/activity-service";
 import { dispatchCommentReview } from "@/app/api/server/comment-automator";
 import { isMissionControlDemoMode, demoReadOnlyResponse } from "@/app/api/server/demo-mode";
 
+const OPERATOR_ACTOR = {
+  type: "human" as const,
+  id: "operator",
+  name: "Operator",
+};
+
 function clampLimit(value: string | null, fallback = 50) {
   const n = value ? Number.parseInt(value, 10) : fallback;
   if (!Number.isFinite(n)) return fallback;
@@ -59,7 +65,7 @@ export async function POST(
 
     const task = await prisma.task.findUnique({
       where: { id },
-      select: { id: true },
+      select: { id: true, title: true },
     });
 
     if (!task) {
@@ -101,12 +107,13 @@ export async function POST(
 
     // Persist activity for audit trail and activity feed
     await activityService.log({
-      kind: "task",
+      kind: "comment",
       action: "comment.created",
-      summary: `Comment added to task ${id}`,
+      summary: `Operator added a comment on task "${task.title}"`,
+      actor: OPERATOR_ACTOR,
       taskId: id,
+      commentId: comment.id,
       payload: {
-        commentId: comment.id,
         authorType: comment.authorType,
         requiresResponse: comment.requiresResponse,
       },

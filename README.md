@@ -113,7 +113,37 @@ npm start            # Levantar build de producción
 npm run db:push      # Aplicar schema de DB manualmente
 npm run db:seed      # Re-seedear datos iniciales
 npm run db:generate  # Regenerar cliente Prisma
+npm run dummy:set    # Cargar DummySet (snapshot ejemplo) en local + demo
+npm run dummy:restore # Rehidratar dataset dummy local + demo y validar snapshot
 ```
+
+### DummySet (snapshot de demo)
+
+`DummySet` es el dataset de ejemplo oficial para la página DEMO.
+Incluye 4 agentes (Claudio, Codi, Lucy, Ninja), 8 tasks y actividad de ejemplo.
+
+Para restaurarlo:
+```bash
+npm run dummy:set
+```
+
+### Nota importante (Windows / .next lock)
+
+No corras `npm run dev` (3001) y `npm run dev:demo` (3002) al mismo tiempo dentro del mismo repo.
+Ambos procesos comparten `.next` y puede aparecer `EPERM ... .next/trace` o fallos de arranque intermitentes.
+
+Flujo recomendado:
+1. Levantar solo una instancia dev por vez.
+2. Si cambiás entre main y demo, cerrá la otra primero.
+3. Si el dataset dummy desaparece, corré `npm run dummy:restore`.
+
+### Perfil de instalación (app remota)
+
+Cuando MC Lucy se instala en un entorno remoto de cliente:
+1. Se instala solo la app Mission Control (API + board + office).
+2. No se instala el sitio web de marketing/manual (`/web/*` y páginas informativas).
+3. El arranque inicial no usa mock data.
+4. Se inicia con API real + task de onboarding + agente default `OpenClaw` (Main).
 
 ## Arquitectura
 

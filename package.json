@@ -13,8 +13,11 @@
     "db:push": "prisma db push",
     "db:seed": "prisma db seed",
     "db:generate": "prisma generate",
+    "dummy:set": "node scripts/restore-dummy.js",
+    "dummy:restore": "node scripts/restore-dummy.js",
     "demo:db:setup": "node scripts/setup-demo-db.js",
     "demo:db:seed": "tsx scripts/seed-demo-db.ts",
+    "demo:dummyset": "tsx scripts/seed-demo-db.ts",
     "demo:db:reset": "npm run demo:db:setup ; npm run demo:db:seed"
   },
   "prisma": {

@@ -5,6 +5,76 @@ import { activityService } from "./activity-service";
 import { ApiError } from "./api-error";
 import { assertDemoWritable } from "./demo-mode";
 
+const OPERATOR_ACTOR = {
+  type: "human" as const,
+  id: "operator",
+  name: "Operator",
+};
+
+function buildTaskUpdateActivity(params: {
+  previous: {
+    status: string;
+    assignedAgentId: string | null;
+    title: string;
+  };
+  current: {
+    status: string;
+    assignedAgentId: string | null;
+    title: string;
+    id: string;
+  };
+}) {
+  if (params.previous.status !== params.current.status) {
+    if (params.current.status === "DONE") {
+      return {
+        eventType: "task.completed",
+        summary: `Operator completed task "${params.current.title}"`,
+        payload: {
+          previousStatus: params.previous.status,
+          nextStatus: params.current.status,
+        },
+      };
+    }
+
+    if (params.current.status === "BLOCKED") {
+      return {
+        eventType: "task.blocked",
+        summary: `Operator marked task "${params.current.title}" as BLOCKED`,
+        payload: {
+          previousStatus: params.previous.status,
+          nextStatus: params.current.status,
+        },
+      };
+    }
+
+    return {
+      eventType: "task.moved",
+      summary: `Operator moved task "${params.current.title}" from ${params.previous.status} to ${params.current.status}`,
+      payload: {
+        previousStatus: params.previous.status,
+        nextStatus: params.current.status,
+      },
+    };
+  }
+
+  if (params.previous.assignedAgentId !== params.current.assignedAgentId) {
+    return {
+      eventType: "task.assigned",
+      summary: `Operator changed assignment for task "${params.current.title}"`,
+      payload: {
+        previousAssignedAgentId: params.previous.assignedAgentId,
+        nextAssignedAgentId: params.current.assignedAgentId,
+      },
+    };
+  }
+
+  return {
+    eventType: "task.updated",
+    summary: `Operator updated task "${params.current.title}"`,
+    payload: {},
+  };
+}
+
 function toPrismaTaskStatus(status: string) {
   return status as unknown as any;
 }
@@ -115,8 +185,10 @@ export const taskService = {
     await activityService.log({
       kind: "task",
       action: "task.created",
-      summary: `Task "${task.title}" created`,
+      summary: `Operator created task "${task.title}"`,
+      actor: OPERATOR_ACTOR,
       taskId: task.id,
+      agentId: task.assignedAgentId ?? undefined,
       payload: { status: task.status, priority: task.priority },
     });
 
@@ -128,6 +200,15 @@ export const taskService = {
     updates: Partial<{ title: string; description: string; status: string; assignedAgentId?: string | null; priority?: number }>,
   ) {
     assertDemoWritable();
+
+    const existing = await prisma.task.findUnique({
+      where: { id },
+      select: { id: true, title: true, status: true, assignedAgentId: true },
+    });
+
+    if (!existing) {
+      throw new ApiError(404, "NOT_FOUND", "Task not found");
+    }
 
     if (typeof updates.priority === "number" && (updates.priority < 1 || updates.priority > 5)) {
       throw new ApiError(400, "VALIDATION_ERROR", "Priority must be between 1 and 5");
@@ -165,13 +246,31 @@ export const taskService = {
       data: task,
     });
 
+    const activity = buildTaskUpdateActivity({
+      previous: {
+        status: existing.status,
+        assignedAgentId: existing.assignedAgentId,
+        title: existing.title,
+      },
+      current: {
+        status: task.status,
+        assignedAgentId: task.assignedAgentId ?? null,
+        title: task.title,
+        id: task.id,
+      },
+    });
+
     await activityService.log({
       kind: "task",
-      action: "task.updated",
-      summary: `Task "${task.title}" updated`,
+      action: activity.eventType,
+      summary: activity.summary,
+      actor: OPERATOR_ACTOR,
       taskId: task.id,
       agentId: task.assignedAgentId ?? undefined,
-      payload: { status: task.status },
+      payload: {
+        status: task.status,
+        ...activity.payload,
+      },
     });
 
     return task;
@@ -190,7 +289,8 @@ export const taskService = {
       await activityService.log({
         kind: "task",
         action: "task.deleted",
-        summary: `Task "${task.title}" deleted`,
+        summary: `Operator deleted task "${task.title}"`,
+        actor: OPERATOR_ACTOR,
         taskId: task.id,
       });
 
@@ -228,7 +328,8 @@ export const taskService = {
     await activityService.log({
       kind: "task",
       action: "task.archived",
-      summary: `Task "${existing.title}" archived`,
+      summary: `Operator archived task "${existing.title}"`,
+      actor: OPERATOR_ACTOR,
       taskId: existing.id,
       payload: { archivedAt: archived.archivedAt },
     });

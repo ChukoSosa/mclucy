@@ -54,6 +54,11 @@ export const agentService = {
       kind: "agent",
       action: "agent.status",
       summary: `${agent.name}: ${agent.statusMessage ?? agent.status}`,
+      actor: {
+        type: "agent",
+        id: agent.id,
+        name: agent.name,
+      },
       agentId: agent.id,
       payload: { statusMessage: agent.statusMessage, status: agent.status },
     });

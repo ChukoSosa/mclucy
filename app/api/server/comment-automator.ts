@@ -126,10 +126,16 @@ async function executeCommentReviewRun(runId: string): Promise<void> {
       });
 
       await activityService.log({
-        kind: "run",
+        kind: "comment",
         action: "comment.answered",
         summary: `Main replied to comment on task "${task.title}"`,
+        actor: {
+          type: "agent",
+          id: "main-openclaw-agent",
+          name: "Main",
+        },
         taskId,
+        commentId: replyComment.id,
         runId,
         payload: { replyCommentId: replyComment.id, replyToId: commentId, attempt },
       });
@@ -159,6 +165,11 @@ async function executeCommentReviewRun(runId: string): Promise<void> {
     kind: "run",
     action: "comment.review.failed",
     summary: `Main failed to reply to comment on task "${task.title}"`,
+    actor: {
+      type: "agent",
+      id: "main-openclaw-agent",
+      name: "Main",
+    },
     taskId,
     runId,
     payload: { lastError, maxRetries: MAX_RETRIES },
@@ -210,7 +221,13 @@ export function dispatchCommentReview(params: {
         kind: "run",
         action: "comment.review.queued",
         summary: `Comment review run queued for task ${params.taskId}`,
+        actor: {
+          type: "system",
+          id: "comment-automator",
+          name: "System",
+        },
         taskId: params.taskId,
+        commentId: params.commentId,
         runId: run.id,
         payload: { commentId: params.commentId },
       });

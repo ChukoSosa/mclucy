@@ -196,7 +196,10 @@ export default function OfficePage() {
         </section>
 
         <section className="min-h-0 lg:h-full lg:min-h-[560px]">
-          <ActivityPanel selectedAgentId={selectedAgentId} />
+          <ActivityPanel
+            selectedAgentId={selectedAgentId}
+            selectedAgentName={selected?.agent.name ?? null}
+          />
         </section>
       </div>
     </DashboardShell>

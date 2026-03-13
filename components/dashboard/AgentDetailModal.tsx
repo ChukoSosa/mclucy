@@ -14,6 +14,8 @@ import { getTasks } from "@/lib/api/tasks";
 import { getActivity } from "@/lib/api/activity";
 import { Card, StatusBadge, EmptyState, ErrorMessage, SkeletonList } from "@/components/ui";
 import { fromNow } from "@/lib/utils/formatDate";
+import { cn } from "@/lib/utils/cn";
+import { getActivityActorLabel, getActivityVisual } from "@/lib/activity/presentation";
 
 interface AgentDetailModalProps {
   agent: Agent | null;
@@ -49,6 +51,18 @@ export function AgentDetailModal({ agent, open, onClose }: AgentDetailModalProps
     enabled: open && !!agent?.id,
   });
 
+  const filteredActivity = useMemo(() => {
+    if (!agent) return [];
+
+    return activity.filter((item) => {
+      if (item.actorType === "agent" && item.actorId) {
+        return item.actorId === agent.id;
+      }
+
+      return item.agentId === agent.id;
+    });
+  }, [activity, agent]);
+
   const assignedTasks = useMemo(() => {
     if (!agent) return [];
     return tasks.filter((task) => {
@@ -60,7 +74,7 @@ export function AgentDetailModal({ agent, open, onClose }: AgentDetailModalProps
     });
   }, [agent, tasks]);
 
-  const lastActivity = activity[0];
+  const lastActivity = filteredActivity[0];
 
   if (!open || !agent) return null;
 
@@ -107,8 +121,24 @@ export function AgentDetailModal({ agent, open, onClose }: AgentDetailModalProps
                   <p className="text-slate-400">No activity detected for this agent.</p>
                 )}
                 {activityLoading && <p className="text-slate-500">Loading activity…</p>}
-                {lastActivity && (
+                {lastActivity && (() => {
+                  const visual = getActivityVisual(lastActivity);
+                  const actorLabel = getActivityActorLabel(lastActivity);
+
+                  return (
                   <div className="space-y-1">
+                    <div className="flex flex-wrap items-center gap-2 text-[10px]">
+                      <span className={cn("inline-flex items-center gap-1 rounded border px-1.5 py-0.5 font-semibold uppercase tracking-wide", visual.badgeClassName)}>
+                        <FontAwesomeIcon icon={visual.icon} className="text-[9px]" />
+                        {visual.label}
+                      </span>
+                      {actorLabel && (
+                        <span className="inline-flex items-center gap-1 rounded border border-surface-600 bg-surface-900 px-1.5 py-0.5 text-slate-300">
+                          <FontAwesomeIcon icon={faBolt} className="text-[9px]" />
+                          {actorLabel}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-slate-200">
                       {lastActivity.summary ?? lastActivity.type ?? lastActivity.event ?? lastActivity.action ?? lastActivity.kind ?? "Activity event"}
                     </p>
@@ -117,7 +147,8 @@ export function AgentDetailModal({ agent, open, onClose }: AgentDetailModalProps
                       {fromNow(lastActivity.occurredAt ?? lastActivity.createdAt ?? lastActivity.timestamp ?? lastActivity.updatedAt)}
                     </p>
                   </div>
-                )}
+                  );
+                })()}
               </div>
             </div>
           </Card>
@@ -149,22 +180,39 @@ export function AgentDetailModal({ agent, open, onClose }: AgentDetailModalProps
           <Card title="Recent Agent Activity" className="h-full lg:col-span-2">
             {activityLoading && <SkeletonList rows={4} />}
             {activityError && <ErrorMessage message="Failed to load activity" />}
-            {!activityLoading && !activityError && activity.length === 0 && (
+            {!activityLoading && !activityError && filteredActivity.length === 0 && (
               <EmptyState message="No recent activity" />
             )}
-            {activity.length > 0 && (
+            {filteredActivity.length > 0 && (
               <div className="space-y-1.5">
-                {activity.map((item, idx) => (
-                  <div key={item.id ?? idx} className="rounded border border-surface-700 bg-surface-800 p-2">
-                    <p className="text-xs text-slate-200 flex items-start gap-1.5">
-                      <FontAwesomeIcon icon={faBolt} className="text-amber-400 mt-0.5 text-[10px]" />
-                      <span>{item.summary ?? item.type ?? item.event ?? item.action ?? item.kind ?? "Activity event"}</span>
-                    </p>
-                    <p className="mt-1 text-[10px] text-slate-500">
-                      {fromNow(item.createdAt ?? item.timestamp ?? item.updatedAt ?? item.occurredAt)}
-                    </p>
-                  </div>
-                ))}
+                {filteredActivity.map((item, idx) => {
+                  const visual = getActivityVisual(item);
+                  const actorLabel = getActivityActorLabel(item);
+
+                  return (
+                    <div key={item.id ?? idx} className="rounded border border-surface-700 bg-surface-800 p-2">
+                      <div className="flex flex-wrap items-center gap-2 text-[10px]">
+                        <span className={cn("inline-flex items-center gap-1 rounded border px-1.5 py-0.5 font-semibold uppercase tracking-wide", visual.badgeClassName)}>
+                          <FontAwesomeIcon icon={visual.icon} className="text-[9px]" />
+                          {visual.label}
+                        </span>
+                        {actorLabel && (
+                          <span className="inline-flex items-center gap-1 rounded border border-surface-600 bg-surface-900 px-1.5 py-0.5 text-slate-300">
+                            <FontAwesomeIcon icon={faBolt} className="text-[9px]" />
+                            {actorLabel}
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-1 text-xs text-slate-200 flex items-start gap-1.5">
+                        <FontAwesomeIcon icon={visual.icon} className={cn("mt-0.5 text-[10px]", visual.toneClassName)} />
+                        <span>{item.summary ?? item.type ?? item.event ?? item.action ?? item.kind ?? "Activity event"}</span>
+                      </p>
+                      <p className="mt-1 text-[10px] text-slate-500">
+                        {fromNow(item.createdAt ?? item.timestamp ?? item.updatedAt ?? item.occurredAt)}
+                      </p>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </Card>
