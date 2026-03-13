@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
 export default function ThankYouPage() {
-  redirect("/web/thanks");
+  redirect("/web/payment");
 }

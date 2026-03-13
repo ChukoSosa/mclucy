@@ -1,78 +1,53 @@
-"use client";
+import Link from "next/link";
+import { redirect } from "next/navigation";
 
-import { useMemo, useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faCopy } from "@fortawesome/free-solid-svg-icons";
-import { Card } from "@/components/ui";
+type ThanksPageProps = {
+  searchParams: Promise<{ paid?: string; plan?: string }>;
+};
 
-export default function WebThanksPage() {
-  const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
+const PLAN_LABEL: Record<string, string> = {
+  monthly: "Monthly License",
+  annual: "Annual License",
+};
 
-  const openClawPrompt = useMemo(
-    () => `You are my installation agent. Install MC Lucy locally and validate everything end-to-end.
+export default async function ThanksPage({ searchParams }: ThanksPageProps) {
+  const params = await searchParams;
+  const isPaid = params.paid === "1";
 
-Goal:
-1. Clone the repository.
-2. Install dependencies.
-3. Ensure PostgreSQL is running.
-4. Start MC Lucy with real API mode.
-5. Verify health, agents, and tasks endpoints.
+  if (!isPaid) {
+    redirect("/web/payment");
+  }
 
-Steps:
-1. Ensure PostgreSQL is running.
-2. Clone repository and install dependencies.
-3. Run npm run dev.
-4. Validate:
-   curl http://localhost:3001/api/health
-   curl http://localhost:3001/api/agents
-   curl http://localhost:3001/api/tasks
-
-Return final report: status, root cause if fail, commands executed, endpoint summary.`,
-    [],
-  );
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(openClawPrompt);
-      setCopyState("copied");
-      window.setTimeout(() => setCopyState("idle"), 2200);
-    } catch {
-      setCopyState("error");
-      window.setTimeout(() => setCopyState("idle"), 2600);
-    }
-  };
+  const plan = params.plan ?? "annual";
+  const planLabel = PLAN_LABEL[plan] ?? "Selected License";
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-5 px-6 py-14 sm:py-16">
-      <header className="text-center">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300">MC Lucy</p>
-        <h1 className="mt-2 text-3xl font-semibold text-white">Thanks for trusting the project</h1>
-        <p className="mt-2 text-sm text-slate-300">Use this prompt to bootstrap an installation assistant quickly.</p>
-      </header>
+    <div className="mx-auto w-full max-w-4xl px-6 py-16 sm:py-20">
+      <section className="rounded-3xl border border-emerald-400/30 bg-emerald-500/10 p-8 text-center sm:p-12">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200">Payment confirmed</p>
+        <h1 className="mt-3 text-3xl font-semibold text-white sm:text-4xl">Thanks, your MC Lucy license is active</h1>
+        <p className="mt-3 text-sm leading-relaxed text-slate-200">
+          Plan activated: <span className="font-semibold text-emerald-200">{planLabel}</span>
+        </p>
+        <p className="mt-2 text-sm text-slate-300">
+          You can now continue to Mission Control and start operating with your selected plan.
+        </p>
 
-      <Card
-        title="OpenClaw Installation Prompt"
-        titleRight={
-          <button
-            onClick={handleCopy}
-            className="inline-flex items-center gap-2 rounded border border-cyan-500/40 bg-cyan-500/15 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-cyan-200 transition hover:bg-cyan-500/25"
-            type="button"
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          <Link
+            href="/app"
+            className="rounded-md bg-emerald-300 px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-emerald-200"
           >
-            <FontAwesomeIcon icon={copyState === "copied" ? faCheck : faCopy} />
-            {copyState === "copied" ? "Copied" : "Copy Prompt"}
-          </button>
-        }
-        className="mx-auto w-full max-w-3xl"
-        bodyClassName="space-y-3"
-      >
-        <p className="text-sm text-slate-300">Paste this in OpenClaw and let it run the setup flow.</p>
-        <pre className="max-h-[420px] overflow-auto rounded-md border border-surface-700 bg-surface-950 p-4 text-xs leading-relaxed text-slate-200">
-          {openClawPrompt}
-        </pre>
-        {copyState === "error" && (
-          <p className="text-xs text-rose-300">Could not copy automatically. Select the text manually and copy it.</p>
-        )}
-      </Card>
+            Open Mission Control
+          </Link>
+          <Link
+            href="/web/landing"
+            className="rounded-md border border-slate-600 px-5 py-2.5 text-sm font-semibold text-slate-100 transition hover:border-emerald-300 hover:text-emerald-200"
+          >
+            Back to Landing
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }

@@ -22,6 +22,25 @@ const USE_CASES = [
   "Run local-first mission control with Next.js + Prisma",
 ];
 
+const MANUAL_SECTION_BLOCKS = [
+  {
+    title: "What You Operate",
+    text: "MC Lucy centralizes agents, tasks, subtasks, comments, and system signals in one command surface.",
+  },
+  {
+    title: "How Teams Use It",
+    text: "Operators define priorities, agents execute cards, and supervisors validate outcomes with full traceability.",
+  },
+  {
+    title: "Control and Risk",
+    text: "SLA alerts, status transitions, and activity logs make bottlenecks visible before they impact delivery.",
+  },
+  {
+    title: "Scale Path",
+    text: "Start with one pipeline and expand to multiple initiatives while preserving shared operational standards.",
+  },
+];
+
 export const metadata = {
   title: "MC Lucy | Landing",
   description: "Landing base for MC Lucy website.",
@@ -49,7 +68,7 @@ export default function LandingPage() {
             Open Mission Control
           </Link>
           <Link
-            href="/web/manual"
+            href="/web/welcome"
             className="rounded-md border border-slate-600 px-5 py-2.5 text-sm font-semibold text-slate-100 transition hover:border-cyan-300 hover:text-cyan-200"
           >
             Read Manual
@@ -83,6 +102,40 @@ export default function LandingPage() {
         <p className="mt-2 text-sm text-slate-300">
           Share your complete prompt and we will transform this scaffold into the final one-page experience.
         </p>
+      </section>
+
+      <section className="mt-12 rounded-2xl border border-slate-800 bg-slate-900/70 p-6 sm:p-8">
+        <header className="max-w-3xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">Manual Highlights</p>
+          <h2 className="mt-3 text-3xl font-semibold text-white sm:text-4xl">Operate MC Lucy with confidence</h2>
+          <p className="mt-3 text-sm leading-relaxed text-slate-300">
+            This block replaces the standalone manual structure and now lives inside the landing as requested.
+          </p>
+        </header>
+
+        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+          {MANUAL_SECTION_BLOCKS.map((block) => (
+            <article key={block.title} className="rounded-2xl border border-slate-800 bg-slate-950/60 p-5">
+              <h3 className="text-lg font-semibold text-white">{block.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-300">{block.text}</p>
+            </article>
+          ))}
+        </div>
+
+        <footer className="mt-8 flex flex-wrap gap-3">
+          <Link
+            href="/web/payment"
+            className="rounded-md bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300"
+          >
+            Choose a Plan
+          </Link>
+          <Link
+            href="/app"
+            className="rounded-md border border-slate-700 px-4 py-2 text-sm text-slate-200 transition hover:border-cyan-300 hover:text-cyan-200"
+          >
+            Open Mission Control
+          </Link>
+        </footer>
       </section>
     </div>
   );

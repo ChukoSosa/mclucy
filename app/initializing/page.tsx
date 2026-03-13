@@ -25,7 +25,7 @@ export default function InitializingPage() {
     if (systemState?.state !== "READY") return;
 
     const timeout = window.setTimeout(() => {
-      router.replace("/welcome");
+      router.replace("/web/welcome");
     }, 1500);
 
     return () => window.clearTimeout(timeout);
@@ -124,10 +124,10 @@ export default function InitializingPage() {
               Manual fallback
             </p>
             <button
-              onClick={() => router.push("/welcome")}
+              onClick={() => router.push("/web/welcome")}
               className="rounded border border-surface-600 bg-surface-800 px-2 py-1 text-[11px] text-slate-300 hover:bg-surface-700"
             >
-              Continue to Onboarding
+              Continue to Manual
             </button>
           </div>
         </div>
