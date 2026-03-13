@@ -18,7 +18,6 @@ import {
 } from "@/lib/office/placementEngine";
 import { normalizeSceneState } from "@/lib/office/sceneStateNormalizer";
 import {
-  generateMcMonkeyAvatar,
   persistAvatar,
   readAvatarMappingFromStorage,
   resolveAgentAvatarUrl,
@@ -41,11 +40,10 @@ const MCLUCY_AGENT: Agent = {
 
 export default function OfficePage() {
   const demoMode = isPublicDemoMode();
-  const [activeGenerationAgentId, setActiveGenerationAgentId] = useState<string | null>(null);
-  const [generationQueue, setGenerationQueue] = useState<string[]>([]);
   const [avatarError, setAvatarError] = useState<string | null>(null);
   const [lucyAvatarUrl, setLucyAvatarUrl] = useState<string>("/office/imgs/mclucy-avatar.png");
-  const isMountedRef = useRef(true);
+  const [avatarLibrary, setAvatarLibrary] = useState<string[]>([]);
+  const [avatarSwitching, setAvatarSwitching] = useState(false);
 
   const selectedAgentId = useOfficeStore((s) => s.selectedAgentId);
   const agentPositions = useOfficeStore((s) => s.agentPositions);
@@ -76,12 +74,6 @@ export default function OfficePage() {
   }, [hydrateAvatarMapping]);
 
   useEffect(() => {
-    return () => {
-      isMountedRef.current = false;
-    };
-  }, []);
-
-  useEffect(() => {
     let cancelled = false;
 
     const loadLucyAvatar = async () => {
@@ -89,9 +81,12 @@ export default function OfficePage() {
         const response = await fetch("/api/mc-monkeys", { method: "GET" });
         if (!response.ok) return;
 
-        const payload = await response.json() as { lucyAvatar?: string | null };
+        const payload = await response.json() as { lucyAvatar?: string | null; avatars?: string[] };
         if (!cancelled && payload.lucyAvatar) {
           setLucyAvatarUrl(payload.lucyAvatar);
+        }
+        if (!cancelled && Array.isArray(payload.avatars)) {
+          setAvatarLibrary(payload.avatars.filter((item): item is string => typeof item === "string"));
         }
       } catch {
         // keep static fallback
@@ -173,11 +168,10 @@ export default function OfficePage() {
         x: zoneConfig.x,
         y: zoneConfig.y,
         avatarUrl: avatarMapping[item.agent.id] ?? resolveAgentAvatarUrl(item.agent),
-        isGenerating: activeGenerationAgentId === item.agent.id,
         state: item.sceneState,
       };
     });
-  }, [activeGenerationAgentId, agentPositions, avatarMapping, derived]);
+  }, [agentPositions, avatarMapping, derived]);
 
   const selected = useMemo(() => {
     if (!selectedAgentId) return null;
@@ -206,53 +200,44 @@ export default function OfficePage() {
     });
   }, [selected, tasks]);
 
-  const handleGenerateAvatar = async () => {
+  const applyAvatarToSelectedAgent = async (avatarUrl: string) => {
     if (!selected || selected.agent.id === MCLUCY_ID) return;
 
-    const agentId = selected.agent.id;
-    const alreadyQueued = generationQueue.includes(agentId) || activeGenerationAgentId === agentId;
-    if (alreadyQueued) return;
-
     setAvatarError(null);
-    setGenerationQueue((prev) => [...prev, agentId]);
+    setAvatarSwitching(true);
+    try {
+      await persistAvatar(selected.agent.id, avatarUrl, `MC MONKEY carousel selection for ${selected.agent.name}`);
+      setAvatar(selected.agent.id, avatarUrl);
+
+      const currentMapping = useOfficeStore.getState().avatarMapping;
+      saveAvatarMappingToStorage({
+        ...currentMapping,
+        [selected.agent.id]: avatarUrl,
+      });
+    } catch (err) {
+      setAvatarError(err instanceof Error ? err.message : "Failed to update avatar");
+    } finally {
+      setAvatarSwitching(false);
+    }
   };
 
-  useEffect(() => {
-    if (activeGenerationAgentId || generationQueue.length === 0) return;
+  const handlePrevAvatar = async () => {
+    if (!selected || selected.agent.id === MCLUCY_ID || avatarLibrary.length === 0) return;
 
-    const nextAgentId = generationQueue[0];
-    const nextAgent = derivedRef.current.find((item) => item.agent.id === nextAgentId)?.agent;
+    const currentUrl = avatarMapping[selected.agent.id] ?? resolveAgentAvatarUrl(selected.agent) ?? avatarLibrary[0];
+    const currentIndex = Math.max(avatarLibrary.indexOf(currentUrl), 0);
+    const previousIndex = (currentIndex - 1 + avatarLibrary.length) % avatarLibrary.length;
+    await applyAvatarToSelectedAgent(avatarLibrary[previousIndex]);
+  };
 
-    if (!nextAgent) {
-      setGenerationQueue((prev) => prev.slice(1));
-      return;
-    }
+  const handleNextAvatar = async () => {
+    if (!selected || selected.agent.id === MCLUCY_ID || avatarLibrary.length === 0) return;
 
-    const runGeneration = async () => {
-      setActiveGenerationAgentId(nextAgentId);
-
-      try {
-        const { avatarUrl, prompt, variant } = await generateMcMonkeyAvatar(nextAgent);
-        await persistAvatar(nextAgentId, avatarUrl, prompt, variant);
-        setAvatar(nextAgentId, avatarUrl);
-
-        const currentMapping = useOfficeStore.getState().avatarMapping;
-        saveAvatarMappingToStorage({
-          ...currentMapping,
-          [nextAgentId]: avatarUrl,
-        });
-      } catch (err) {
-        setAvatarError(err instanceof Error ? err.message : "Failed to generate avatar");
-      } finally {
-        if (isMountedRef.current) {
-          setActiveGenerationAgentId(null);
-          setGenerationQueue((prev) => prev.slice(1));
-        }
-      }
-    };
-
-    runGeneration();
-  }, [activeGenerationAgentId, generationQueue, setAvatar]);
+    const currentUrl = avatarMapping[selected.agent.id] ?? resolveAgentAvatarUrl(selected.agent) ?? avatarLibrary[0];
+    const currentIndex = Math.max(avatarLibrary.indexOf(currentUrl), 0);
+    const nextIndex = (currentIndex + 1) % avatarLibrary.length;
+    await applyAvatarToSelectedAgent(avatarLibrary[nextIndex]);
+  };
 
   return (
     <DashboardShell showFilters={false}>
@@ -279,9 +264,10 @@ export default function OfficePage() {
             zone={selectedZone}
             state={selected?.sceneState ?? null}
             avatarUrl={selected ? avatarMapping[selected.agent.id] ?? resolveAgentAvatarUrl(selected.agent) : undefined}
-            generating={activeGenerationAgentId === selected?.agent.id}
             avatarError={avatarError}
-            onGenerateAvatar={demoMode || selected?.agent.id === MCLUCY_ID ? undefined : handleGenerateAvatar}
+            onPrevAvatar={demoMode || selected?.agent.id === MCLUCY_ID ? undefined : handlePrevAvatar}
+            onNextAvatar={demoMode || selected?.agent.id === MCLUCY_ID ? undefined : handleNextAvatar}
+            avatarSwitching={avatarSwitching}
             title={selected?.agent.id === MCLUCY_ID ? "Mission Control Inspector" : "Agent Inspector"}
           />
         </section>

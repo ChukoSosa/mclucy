@@ -13,10 +13,9 @@ interface AgentBubbleProps {
   x: number;
   y: number;
   avatarUrl?: string;
-  isGenerating?: boolean;
   state: NormalizedSceneState;
-  onClick: () => void;
-  onReachedPosition: () => void;
+  onSelectAgent: (agentId: string) => void;
+  onReachedPosition: (agentId: string) => void;
 }
 
 function AgentBubbleComponent({
@@ -25,9 +24,8 @@ function AgentBubbleComponent({
   x,
   y,
   avatarUrl,
-  isGenerating,
   state,
-  onClick,
+  onSelectAgent,
   onReachedPosition,
 }: AgentBubbleProps) {
   const [imageFailed, setImageFailed] = useState(false);
@@ -43,8 +41,8 @@ function AgentBubbleComponent({
       style={{ transform: "translate(-50%, -50%)" }}
       animate={{ left: `${x}%`, top: `${y}%` }}
       transition={{ type: "spring", stiffness: 120, damping: 18, mass: 0.8 }}
-      onAnimationComplete={onReachedPosition}
-      onClick={onClick}
+      onAnimationComplete={() => onReachedPosition(agent.id)}
+      onClick={() => onSelectAgent(agent.id)}
       aria-label={`Open inspector for ${agent.name}`}
     >
       <div
@@ -67,12 +65,6 @@ function AgentBubbleComponent({
         ) : (
           <div className="flex h-full w-full items-center justify-center rounded-full bg-surface-800 text-xs font-bold text-cyan-300">
             {agent.name.slice(0, 2).toUpperCase()}
-          </div>
-        )}
-
-        {isGenerating && (
-          <div className="absolute inset-0 flex items-center justify-center rounded-full bg-surface-900/75">
-            <span className="h-5 w-5 rounded-full border-2 border-cyan-400/30 border-t-cyan-300 animate-spin" />
           </div>
         )}
       </div>

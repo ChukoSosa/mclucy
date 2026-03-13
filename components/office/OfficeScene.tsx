@@ -11,7 +11,6 @@ export interface OfficeAgentView {
   x: number;
   y: number;
   avatarUrl?: string;
-  isGenerating?: boolean;
   state: NormalizedSceneState;
 }
 
@@ -43,10 +42,9 @@ function OfficeSceneComponent({ agents, onSelectAgent, onReachedPosition }: Offi
             x={item.x}
             y={item.y}
             avatarUrl={item.avatarUrl}
-            isGenerating={item.isGenerating}
             state={item.state}
-            onClick={() => onSelectAgent(item.agent.id)}
-            onReachedPosition={() => onReachedPosition(item.agent.id)}
+            onSelectAgent={onSelectAgent}
+            onReachedPosition={onReachedPosition}
           />
         ))}
       </div>
