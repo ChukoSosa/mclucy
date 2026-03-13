@@ -13,8 +13,8 @@ import {
   faArrowRight,
 } from "@fortawesome/free-solid-svg-icons";
 import { Card } from "@/components/ui";
-import { SystemStateBadge } from "@/components/initialization/SystemStateBadge";
-import { InitializationChecklist } from "@/components/initialization/InitializationChecklist";
+import { SystemStateBadge } from "@/components/mission-control/initialization/SystemStateBadge";
+import { InitializationChecklist } from "@/components/mission-control/initialization/InitializationChecklist";
 import { useSystemInitializationState } from "@/lib/mission/useSystemInitializationState";
 
 export default function InitializingPage() {
@@ -25,7 +25,7 @@ export default function InitializingPage() {
     if (systemState?.state !== "READY") return;
 
     const timeout = window.setTimeout(() => {
-      router.replace("/web/welcome");
+      router.replace("/web/manual");
     }, 1500);
 
     return () => window.clearTimeout(timeout);
@@ -124,7 +124,7 @@ export default function InitializingPage() {
               Manual fallback
             </p>
             <button
-              onClick={() => router.push("/web/welcome")}
+              onClick={() => router.push("/web/manual")}
               className="rounded border border-surface-600 bg-surface-800 px-2 py-1 text-[11px] text-slate-300 hover:bg-surface-700"
             >
               Continue to Manual

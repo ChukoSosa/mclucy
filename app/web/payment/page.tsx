@@ -20,7 +20,7 @@ export default function PaymentPage() {
     if (!cardholder.trim() || !cardNumber.trim() || !expiry.trim() || !cvv.trim()) return;
     setIsSubmitting(true);
     await new Promise((resolve) => setTimeout(resolve, 900));
-    router.push("/thank-you");
+    router.push("/web/thank-you");
   };
 
   return (
@@ -54,7 +54,7 @@ export default function PaymentPage() {
                 View Live Demo
               </Link>
               <Link
-                href="/web/welcome"
+                href="/web/manual"
                 className="rounded-md border border-slate-700 px-5 py-2.5 text-sm font-semibold text-slate-200 transition hover:border-cyan-400 hover:text-cyan-200"
               >
                 Read the Manual

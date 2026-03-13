@@ -5,8 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBullseye } from "@fortawesome/free-solid-svg-icons";
-import { SummaryBar } from "@/components/dashboard/SummaryBar";
-import { FiltersBar } from "@/components/dashboard/FiltersBar";
+import { SummaryBar } from "@/components/mission-control/dashboard/SummaryBar";
+import { FiltersBar } from "@/components/mission-control/dashboard/FiltersBar";
 import { cn } from "@/lib/utils/cn";
 import { useOnboardingState } from "@/lib/utils/useOnboardingState";
 import { isPublicDemoMode } from "@/lib/utils/demoMode";
@@ -84,7 +84,7 @@ export function DashboardShell({ children, showFilters = true, topBar }: Dashboa
   return (
     <div className="min-h-screen bg-surface-950 flex flex-col">
       <header className="shrink-0 border-b border-surface-700 bg-surface-900 px-6 py-3 flex items-center justify-between gap-3">
-        <Link href="/welcome" className="group flex items-center gap-3 rounded-md px-1 py-1 hover:bg-surface-800">
+        <Link href="/web/manual" className="group flex items-center gap-3 rounded-md px-1 py-1 hover:bg-surface-800">
           <FontAwesomeIcon icon={faBullseye} className="text-cyan-400 text-lg" />
           <div>
             <h1 className="text-sm font-bold tracking-widest uppercase text-slate-100">Mission Control</h1>

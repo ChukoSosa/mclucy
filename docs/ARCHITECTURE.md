@@ -68,19 +68,20 @@ app/
 │   ├── board/
 │   ├── office/
 │   └── overview/
-├── app/page.tsx             # /app — Mission Control (redirect)
-├── board/page.tsx           # /board — Board view
-├── initializing/page.tsx    # /initializing — Boot screen
-├── office/page.tsx          # /office — Office 3D scene
-├── overview/page.tsx        # /overview — Overview
+├── (mission-control)/       # Mission Control-only routes (URL preserved)
+│   ├── app/page.tsx         # /app — Mission Control (redirect)
+│   ├── board/page.tsx       # /board — Board view
+│   ├── initializing/page.tsx# /initializing — Boot screen
+│   ├── office/page.tsx      # /office — Office 3D scene
+│   ├── overview/page.tsx    # /overview — Overview
+│   └── dashboard-page.tsx   # Dashboard component
 ├── proxy/[...path]/         # Proxy passthrough
-├── thank-you/page.tsx       # /thank-you — Install prompt for OpenClaw
 ├── web/                     # Marketing/public routes
 │   ├── landing/             # /web/landing
 │   ├── manual/              # /web/manual
 │   ├── payment/             # /web/payment
+│   ├── thank-you/           # /web/thank-you
 │   └── story/               # /web/story
-├── dashboard-page.tsx       # Dashboard component
 ├── layout.tsx               # Root layout
 ├── page.tsx                 # Home (/)
 └── providers.tsx            # React Query, Zustand providers
@@ -90,25 +91,28 @@ app/
 
 ```
 components/
-├── dashboard/
-│   ├── DashboardShell.tsx      # Main layout
-│   ├── AgentsPanel.tsx         # Agents list
-│   ├── TasksPanel.tsx          # Tasks list
-│   ├── ActivityFeedPanel.tsx   # Activity log + SLA alerts section
-│   ├── KpiPanel.tsx            # Key metrics
-│   ├── SSEPanel.tsx            # Real-time events
-│   ├── FiltersBar.tsx          # Filters
-│   ├── SummaryBar.tsx          # Top stats
-│   ├── AgentDetailModal.tsx    # Agent details
-│   ├── TaskDetailPanel.tsx     # Task details + MainAgentBubble
-│   ├── PipelineBoard.tsx       # Pipeline/stage lanes view
-│   └── CreateTaskModal.tsx     # Task creation modal
-│
-├── office/
-│   ├── OfficeScene.tsx         # 3D scene (Babylon.js)
-│   ├── AgentBubble.tsx         # Agent avatar bubble
-│   ├── AgentInspector.tsx      # Agent inspector panel
-│   └── ActivityPanel.tsx       # Activity sidebar
+├── mission-control/
+│   ├── dashboard/
+│   │   ├── DashboardShell.tsx      # Main layout
+│   │   ├── AgentsPanel.tsx         # Agents list
+│   │   ├── TasksPanel.tsx          # Tasks list
+│   │   ├── ActivityFeedPanel.tsx   # Activity log + SLA alerts section
+│   │   ├── KpiPanel.tsx            # Key metrics
+│   │   ├── SSEPanel.tsx            # Real-time events
+│   │   ├── FiltersBar.tsx          # Filters
+│   │   ├── SummaryBar.tsx          # Top stats
+│   │   ├── AgentDetailModal.tsx    # Agent details
+│   │   ├── TaskDetailPanel.tsx     # Task details + MainAgentBubble
+│   │   ├── PipelineBoard.tsx       # Pipeline/stage lanes view
+│   │   └── CreateTaskModal.tsx     # Task creation modal
+│   ├── office/
+│   │   ├── OfficeScene.tsx         # 3D scene (Babylon.js)
+│   │   ├── AgentBubble.tsx         # Agent avatar bubble
+│   │   ├── AgentInspector.tsx      # Agent inspector panel
+│   │   └── ActivityPanel.tsx       # Activity sidebar
+│   └── initialization/
+│       ├── InitializationChecklist.tsx
+│       └── SystemStateBadge.tsx
 │
 └── ui/
     ├── Card.tsx                # Base card component

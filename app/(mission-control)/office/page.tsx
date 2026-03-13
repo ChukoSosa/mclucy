@@ -2,12 +2,12 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { DashboardShell } from "@/components/mission-control/dashboard/DashboardShell";
 import { getAgents } from "@/lib/api/agents";
 import { getTasks } from "@/lib/api/tasks";
-import { OfficeScene, type OfficeAgentView } from "@/components/office/OfficeScene";
-import { AgentInspector } from "@/components/office/AgentInspector";
-import { ActivityPanel } from "@/components/office/ActivityPanel";
+import { OfficeScene, type OfficeAgentView } from "@/components/mission-control/office/OfficeScene";
+import { AgentInspector } from "@/components/mission-control/office/AgentInspector";
+import { ActivityPanel } from "@/components/mission-control/office/ActivityPanel";
 import { useOfficeStore } from "@/store/officeStore";
 import { OFFICE_ZONES, type ZoneId } from "@/lib/office/zones";
 import {
@@ -29,19 +29,20 @@ import { getRealtimeRefetchInterval, isPublicDemoMode } from "@/lib/utils/demoMo
 const EMPTY_AGENTS: Agent[] = [];
 const EMPTY_TASKS: Task[] = [];
 const MCLUCY_ID = "mclucy-chief";
+const MCLUCY_AVATAR_URL = "/office/mcmonkes-library/001.png";
 const MCLUCY_AGENT: Agent = {
   id: MCLUCY_ID,
   name: "mcLUCY",
   role: "Chief Mission Control",
   status: "WORKING",
   statusMessage: "Overseeing all operations",
-  avatarUrl: "/office/imgs/mclucy-avatar.png",
+  avatarUrl: MCLUCY_AVATAR_URL,
 };
 
 export default function OfficePage() {
   const demoMode = isPublicDemoMode();
   const [avatarError, setAvatarError] = useState<string | null>(null);
-  const [lucyAvatarUrl, setLucyAvatarUrl] = useState<string>("/office/imgs/mclucy-avatar.png");
+  const [lucyAvatarUrl, setLucyAvatarUrl] = useState<string>(MCLUCY_AVATAR_URL);
   const [avatarLibrary, setAvatarLibrary] = useState<string[]>([]);
   const [avatarSwitching, setAvatarSwitching] = useState(false);
 
@@ -81,9 +82,9 @@ export default function OfficePage() {
         const response = await fetch("/api/mc-monkeys", { method: "GET" });
         if (!response.ok) return;
 
-        const payload = await response.json() as { lucyAvatar?: string | null; avatars?: string[] };
-        if (!cancelled && payload.lucyAvatar) {
-          setLucyAvatarUrl(payload.lucyAvatar);
+        const payload = await response.json() as { avatars?: string[] };
+        if (!cancelled) {
+          setLucyAvatarUrl(MCLUCY_AVATAR_URL);
         }
         if (!cancelled && Array.isArray(payload.avatars)) {
           setAvatarLibrary(payload.avatars.filter((item): item is string => typeof item === "string"));
@@ -167,7 +168,10 @@ export default function OfficePage() {
         task: item.task,
         x: zoneConfig.x,
         y: zoneConfig.y,
-        avatarUrl: avatarMapping[item.agent.id] ?? resolveAgentAvatarUrl(item.agent),
+        avatarUrl:
+          item.agent.id === MCLUCY_ID
+            ? MCLUCY_AVATAR_URL
+            : (avatarMapping[item.agent.id] ?? resolveAgentAvatarUrl(item.agent)),
         state: item.sceneState,
       };
     });
@@ -263,7 +267,13 @@ export default function OfficePage() {
             assignedTasks={selectedAssignedTasks}
             zone={selectedZone}
             state={selected?.sceneState ?? null}
-            avatarUrl={selected ? avatarMapping[selected.agent.id] ?? resolveAgentAvatarUrl(selected.agent) : undefined}
+            avatarUrl={
+              selected
+                ? (selected.agent.id === MCLUCY_ID
+                  ? MCLUCY_AVATAR_URL
+                  : (avatarMapping[selected.agent.id] ?? resolveAgentAvatarUrl(selected.agent)))
+                : undefined
+            }
             avatarError={avatarError}
             onPrevAvatar={demoMode || selected?.agent.id === MCLUCY_ID ? undefined : handlePrevAvatar}
             onNextAvatar={demoMode || selected?.agent.id === MCLUCY_ID ? undefined : handleNextAvatar}

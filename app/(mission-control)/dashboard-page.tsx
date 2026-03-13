@@ -1,11 +1,11 @@
 "use client";
 
-import { AgentsPanel } from "@/components/dashboard/AgentsPanel";
-import { TasksPanel } from "@/components/dashboard/TasksPanel";
-import { TaskDetailPanel } from "@/components/dashboard/TaskDetailPanel";
-import { ActivityFeedPanel } from "@/components/dashboard/ActivityFeedPanel";
-import { KpiPanel } from "@/components/dashboard/KpiPanel";
-import { SSEPanel } from "@/components/dashboard/SSEPanel";
+import { AgentsPanel } from "@/components/mission-control/dashboard/AgentsPanel";
+import { TasksPanel } from "@/components/mission-control/dashboard/TasksPanel";
+import { TaskDetailPanel } from "@/components/mission-control/dashboard/TaskDetailPanel";
+import { ActivityFeedPanel } from "@/components/mission-control/dashboard/ActivityFeedPanel";
+import { KpiPanel } from "@/components/mission-control/dashboard/KpiPanel";
+import { SSEPanel } from "@/components/mission-control/dashboard/SSEPanel";
 import { useDashboardStore } from "@/store/dashboardStore";
 import { isPublicDemoMode } from "@/lib/utils/demoMode";
 

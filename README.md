@@ -37,23 +37,38 @@ Front + API en un solo repo. Levantás con un comando y ya tenés agentes, tarea
 app/
 	layout.tsx
 	page.tsx
-	dashboard-page.tsx
+	(mission-control)/
+		dashboard-page.tsx
+		app/page.tsx
+		board/page.tsx
+		office/page.tsx
+		overview/page.tsx
+		initializing/page.tsx
 	providers.tsx
 	globals.css
 	not-found.tsx
 	proxy/[...path]/route.ts
 
 components/
-	dashboard/
-		ActivityFeedPanel.tsx
-		AgentDetailModal.tsx
-		AgentsPanel.tsx
-		FiltersBar.tsx
-		KpiPanel.tsx
-		SSEPanel.tsx
-		SummaryBar.tsx
-		TaskDetailPanel.tsx
-		TasksPanel.tsx
+	mission-control/
+		dashboard/
+			ActivityFeedPanel.tsx
+			AgentDetailModal.tsx
+			AgentsPanel.tsx
+			FiltersBar.tsx
+			KpiPanel.tsx
+			SSEPanel.tsx
+			SummaryBar.tsx
+			TaskDetailPanel.tsx
+			TasksPanel.tsx
+		office/
+			ActivityPanel.tsx
+			AgentBubble.tsx
+			AgentInspector.tsx
+			OfficeScene.tsx
+		initialization/
+			InitializationChecklist.tsx
+			SystemStateBadge.tsx
 	ui/
 		Card.tsx
 		EmptyState.tsx
@@ -171,7 +186,7 @@ El usuario final recibe el ZIP, corre el instalador, y MC Lucy levanta automáti
 | `/web/manual` | Manual de usuario |
 | `/web/story` | Historia del proyecto |
 | `/web/payment` | Página de pago |
-| `/thank-you` | Prompt de instalación para OpenClaw |
+| `/web/thank-you` | Prompt de instalación para OpenClaw |
 
 ## Arquitectura
 

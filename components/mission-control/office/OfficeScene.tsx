@@ -1,7 +1,7 @@
 "use client";
 
 import { memo } from "react";
-import { AgentBubble } from "@/components/office/AgentBubble";
+import { AgentBubble } from "@/components/mission-control/office/AgentBubble";
 import type { Agent, Task } from "@/types";
 import type { NormalizedSceneState } from "@/lib/office/sceneStateNormalizer";
 

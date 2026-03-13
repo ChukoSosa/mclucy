@@ -54,7 +54,7 @@ baseVisualDNA + selectedTraits + negativePrompt
 - Trait pools: lib/office/mcMonkeyTraits.ts
 - Prompt builder: lib/office/buildMcMonkeyPrompt.ts
 - Generation + persistence wiring: lib/office/avatarGenerator.ts
-- Office flow trigger: app/office/page.tsx
+- Office flow trigger: app/(mission-control)/office/page.tsx
 - Agent avatar persistence endpoint: app/api/agents/[id]/avatar/route.ts
 
 ## Runtime Flow

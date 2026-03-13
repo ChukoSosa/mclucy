@@ -164,7 +164,7 @@ También deja lista la carpeta `outputs/` y los documentos que OpenClaw debe lee
 
 ### Regla de dependencias para OpenClaw
 
-Si usás el prompt de `thank-you` o `OPENCLAW-BOOTSTRAP.txt`, OpenClaw debe seguir esta política:
+Si usás el prompt de `/web/thank-you` o `OPENCLAW-BOOTSTRAP.txt`, OpenClaw debe seguir esta política:
 
 1. Verificar dependencias mínimas: Node.js >= 18, PostgreSQL y utilidades necesarias de extracción/ejecución.
 2. Si falta una dependencia y puede instalarla con permisos actuales, debe instalarla y continuar.
