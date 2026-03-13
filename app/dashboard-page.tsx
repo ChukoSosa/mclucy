@@ -7,8 +7,10 @@ import { ActivityFeedPanel } from "@/components/dashboard/ActivityFeedPanel";
 import { KpiPanel } from "@/components/dashboard/KpiPanel";
 import { SSEPanel } from "@/components/dashboard/SSEPanel";
 import { useDashboardStore } from "@/store/dashboardStore";
+import { isPublicDemoMode } from "@/lib/utils/demoMode";
 
 export default function DashboardPage() {
+  const demoMode = isPublicDemoMode();
   const selectedAgentId = useDashboardStore((s) => s.selectedAgentId);
   const setSelectedAgentId = useDashboardStore((s) => s.setSelectedAgentId);
   const setSelectedTaskId = useDashboardStore((s) => s.setSelectedTaskId);
@@ -32,9 +34,11 @@ export default function DashboardPage() {
         <div className="shrink-0">
           <KpiPanel />
         </div>
-        <div className="shrink-0">
-          <SSEPanel />
-        </div>
+        {!demoMode && (
+          <div className="shrink-0">
+            <SSEPanel />
+          </div>
+        )}
       </div>
     </div>
   );

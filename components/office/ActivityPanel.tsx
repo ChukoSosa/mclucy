@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/Card";
 import { getActivity } from "@/lib/api/activity";
 import { formatDistanceToNowStrict } from "date-fns";
+import { getRealtimeRefetchInterval } from "@/lib/utils/demoMode";
 
 interface ActivityPanelProps {
   selectedAgentId: string | null;
@@ -14,7 +15,7 @@ export function ActivityPanel({ selectedAgentId }: ActivityPanelProps) {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["office-activity", selectedAgentId],
     queryFn: () => getActivity({ agentId: selectedAgentId ?? undefined, limit: 30 }),
-    refetchInterval: 10_000,
+    refetchInterval: getRealtimeRefetchInterval(10_000),
   });
 
   const activity = useMemo(() => data ?? [], [data]);

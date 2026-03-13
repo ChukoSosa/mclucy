@@ -16,10 +16,12 @@ import type { SlaTaskAlert } from "@/lib/api/sla";
 import { useDashboardStore } from "@/store/dashboardStore";
 import { fromNow } from "@/lib/utils/formatDate";
 import { priorityLabel, priorityVariant } from "@/lib/utils/formatStatus";
+import { getRealtimeRefetchInterval, isPublicDemoMode } from "@/lib/utils/demoMode";
 
 const DEFAULT_BOARD_COLUMNS = ["BACKLOG", "IN_PROGRESS", "REVIEW", "BLOCKED", "DONE"];
 
 export default function BoardPage() {
+  const demoMode = isPublicDemoMode();
   const selectedAgentId = useDashboardStore((s) => s.selectedAgentId);
   const taskStatusFilter = useDashboardStore((s) => s.taskStatusFilter);
   const searchQuery = useDashboardStore((s) => s.searchQuery);
@@ -81,13 +83,13 @@ export default function BoardPage() {
   const { data: tasks = [], isLoading, isError } = useQuery({
     queryKey: ["tasks", showArchived],
     queryFn: () => getTasks({ includeArchived: showArchived }),
-    refetchInterval: 20_000,
+    refetchInterval: getRealtimeRefetchInterval(20_000),
   });
 
   const { data: slaAlerts = [] } = useQuery<SlaTaskAlert[]>({
     queryKey: ["sla-alerts"],
     queryFn: getSlaAlerts,
-    refetchInterval: 60_000,
+    refetchInterval: getRealtimeRefetchInterval(60_000),
   });
 
   const slaByTaskId = useMemo(
@@ -201,7 +203,7 @@ export default function BoardPage() {
                   className="h-full"
                 >
                   <div className="space-y-2">
-                    {status === "BACKLOG" && (
+                    {status === "BACKLOG" && !demoMode && (
                       <button
                         onClick={handleOpenCreate}
                         className="flex w-full items-center justify-center gap-1.5 rounded border border-cyan-500/50 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-300 transition-colors hover:bg-cyan-500/20"

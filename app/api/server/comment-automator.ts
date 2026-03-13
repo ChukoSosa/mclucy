@@ -26,6 +26,7 @@ import {
   buildMainAgentResponseDraft,
 } from "@/lib/mission/mainAgentPolicy";
 import type { MissionRawIntakeRequest } from "@/lib/mission/intake";
+import { isMissionControlDemoMode } from "./demo-mode";
 
 const MAX_RETRIES = 3;
 const BACKOFF_BASE_MS = 2_000; // 2 s → 6 s → 18 s (×3 per step)
@@ -184,6 +185,7 @@ export function dispatchCommentReview(params: {
   commentBody: string;
   authorType: string;
 }): void {
+  if (isMissionControlDemoMode()) return;
   if (!shouldAutoProcess(params.authorType)) return;
 
   void (async () => {

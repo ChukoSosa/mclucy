@@ -3,6 +3,7 @@ import { prisma } from "./prisma";
 import { emitEvent } from "./event-bus";
 import { activityService } from "./activity-service";
 import { ApiError } from "./api-error";
+import { assertDemoWritable } from "./demo-mode";
 
 function toPrismaTaskStatus(status: string) {
   return status as unknown as any;
@@ -69,6 +70,8 @@ export const taskService = {
     priority?: number;
     pipelineStageId?: string;
   }) {
+    assertDemoWritable();
+
     if (typeof data.priority === "number" && (data.priority < 1 || data.priority > 5)) {
       throw new ApiError(400, "VALIDATION_ERROR", "Priority must be between 1 and 5");
     }
@@ -124,6 +127,8 @@ export const taskService = {
     id: string,
     updates: Partial<{ title: string; description: string; status: string; assignedAgentId?: string | null; priority?: number }>,
   ) {
+    assertDemoWritable();
+
     if (typeof updates.priority === "number" && (updates.priority < 1 || updates.priority > 5)) {
       throw new ApiError(400, "VALIDATION_ERROR", "Priority must be between 1 and 5");
     }
@@ -173,6 +178,8 @@ export const taskService = {
   },
 
   async delete(id: string) {
+    assertDemoWritable();
+
     try {
       const task = await prisma.task.delete({ where: { id } });
       emitEvent({
@@ -197,6 +204,8 @@ export const taskService = {
   },
 
   async archive(id: string) {
+    assertDemoWritable();
+
     const existing = await prisma.task.findUnique({ where: { id }, select: { id: true, title: true, status: true, archivedAt: true } });
     if (!existing) {
       throw new ApiError(404, "NOT_FOUND", "Task not found");

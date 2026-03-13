@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import https from "node:https";
+import { isMissionControlDemoMode, demoReadOnlyResponse } from "@/app/api/server/demo-mode";
 
 // Use node:https directly so we can disable certificate verification for
 // environments with corporate SSL inspection proxies.
@@ -151,6 +152,10 @@ async function generateWithOpenAI(prompt: string, apiKey: string): Promise<strin
 }
 
 export async function POST(req: NextRequest) {
+  if (isMissionControlDemoMode()) {
+    return demoReadOnlyResponse();
+  }
+
   const geminiApiKey = process.env.GEMINI_API_KEY;
   const openAiApiKey = process.env.OPENAI_API_KEY;
   if (!geminiApiKey && !openAiApiKey) {

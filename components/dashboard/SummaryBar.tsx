@@ -14,6 +14,7 @@ import { getSupervisorKpis } from "@/lib/api/kpis";
 import type { SSEStatus } from "@/lib/sse/useSSE";
 import { useSSE } from "@/lib/sse/useSSE";
 import { cn } from "@/lib/utils/cn";
+import { isPublicDemoMode } from "@/lib/utils/demoMode";
 
 const sseStatusConfig: Record<SSEStatus, { label: string; className: string; pulse: boolean }> = {
   connecting: {
@@ -43,6 +44,7 @@ interface SummaryBarProps {
 }
 
 export function SummaryBar({ sseStatus }: SummaryBarProps) {
+  const demoMode = isPublicDemoMode();
   const { status: streamStatus } = useSSE();
   const effectiveSseStatus = sseStatus ?? streamStatus;
 
@@ -68,28 +70,34 @@ export function SummaryBar({ sseStatus }: SummaryBarProps) {
 
   return (
     <div className="flex flex-wrap items-center gap-2 rounded-lg border border-surface-700 bg-surface-900 px-4 py-3">
-      {/* SSE badge */}
-      <div
-        className={cn(
-          "flex items-center gap-1.5 rounded border px-2 py-1 text-[10px] font-semibold uppercase tracking-wider",
-          sse.className,
-        )}
-      >
-        <span
+      {demoMode ? (
+        <div className="flex items-center gap-1.5 rounded border border-cyan-500/30 bg-cyan-500/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-cyan-300">
+          <span className="h-1.5 w-1.5 rounded-full bg-cyan-300" />
+          Static Demo
+        </div>
+      ) : (
+        <div
           className={cn(
-            "h-1.5 w-1.5 rounded-full",
-            effectiveSseStatus === "connected"
-              ? "bg-green-400"
-              : effectiveSseStatus === "connecting"
-                ? "bg-amber-400"
-                : effectiveSseStatus === "error"
-                  ? "bg-red-400"
-                  : "bg-slate-400",
-            sse.pulse && "animate-pulse",
+            "flex items-center gap-1.5 rounded border px-2 py-1 text-[10px] font-semibold uppercase tracking-wider",
+            sse.className,
           )}
-        />
-        {sse.label}
-      </div>
+        >
+          <span
+            className={cn(
+              "h-1.5 w-1.5 rounded-full",
+              effectiveSseStatus === "connected"
+                ? "bg-green-400"
+                : effectiveSseStatus === "connecting"
+                  ? "bg-amber-400"
+                  : effectiveSseStatus === "error"
+                    ? "bg-red-400"
+                    : "bg-slate-400",
+              sse.pulse && "animate-pulse",
+            )}
+          />
+          {sse.label}
+        </div>
+      )}
 
       <div className="h-4 w-px bg-surface-700" />
 

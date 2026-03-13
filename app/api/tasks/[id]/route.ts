@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { taskService } from "@/app/api/server/task-service";
 import { apiErrorResponse } from "@/app/api/server/api-error";
+import { isMissionControlDemoMode, demoReadOnlyResponse } from "@/app/api/server/demo-mode";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -17,6 +18,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    if (isMissionControlDemoMode()) {
+      return demoReadOnlyResponse();
+    }
+
     const { id } = await params;
     const body = await request.json();
     const task = await taskService.update(id, body);
@@ -28,6 +33,10 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    if (isMissionControlDemoMode()) {
+      return demoReadOnlyResponse();
+    }
+
     const { id } = await params;
     const task = await taskService.delete(id);
     return NextResponse.json({ message: "Task deleted", id: task.id });

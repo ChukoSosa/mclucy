@@ -4,6 +4,7 @@ import { prisma } from "./prisma";
 import { emitEvent } from "./event-bus";
 import { activityService } from "./activity-service";
 import { ApiError } from "./api-error";
+import { assertDemoWritable } from "./demo-mode";
 
 function toPrismaStatus(status?: string) {
   return status as unknown as PrismaAgentStatus | undefined;
@@ -19,6 +20,8 @@ export const agentService = {
   },
 
   async heartbeat(agentId: string, payload: { status?: string; statusMessage?: string }) {
+    assertDemoWritable();
+
     let agent;
     try {
       agent = await prisma.agent.update({

@@ -47,10 +47,24 @@ export const activityService = {
   },
 
   async recent(limit = 50) {
-    return prisma.systemEvent.findMany({
+    const events = await prisma.systemEvent.findMany({
       orderBy: { occurredAt: "desc" },
       take: limit,
     });
+    return events.map((event) => ({
+      id: event.id,
+      summary: typeof event.payload === "object" && event.payload && "summary" in event.payload
+        ? (event.payload as Record<string, unknown>).summary as string | undefined
+        : undefined,
+      kind: event.source,
+      action: event.eventType,
+      type: event.eventType,
+      taskId: event.taskId,
+      agentId: event.agentId,
+      runId: event.runId,
+      occurredAt: event.occurredAt.toISOString(),
+      metadata: typeof event.payload === "object" && event.payload ? event.payload as Record<string, unknown> : undefined,
+    }));
   },
 
   async list(options?: {
@@ -76,7 +90,23 @@ export const activityService = {
     const page = hasMore ? events.slice(0, take) : events;
     const nextCursor = hasMore ? page[page.length - 1]?.id ?? null : null;
 
-    return { events: page, nextCursor };
+    return {
+      events: page.map((event) => ({
+        id: event.id,
+        summary: typeof event.payload === "object" && event.payload && "summary" in event.payload
+          ? (event.payload as Record<string, unknown>).summary as string | undefined
+          : undefined,
+        kind: event.source,
+        action: event.eventType,
+        type: event.eventType,
+        taskId: event.taskId,
+        agentId: event.agentId,
+        runId: event.runId,
+        occurredAt: event.occurredAt.toISOString(),
+        metadata: typeof event.payload === "object" && event.payload ? event.payload as Record<string, unknown> : undefined,
+      })),
+      nextCursor,
+    };
   },
 
   async getById(id: string) {

@@ -11,6 +11,7 @@ import { useDashboardStore } from "@/store/dashboardStore";
 import { Card, StatusBadge, SkeletonList, EmptyState, ErrorMessage } from "@/components/ui";
 import { fromNow } from "@/lib/utils/formatDate";
 import { priorityLabel, priorityVariant } from "@/lib/utils/formatStatus";
+import { isPublicDemoMode } from "@/lib/utils/demoMode";
 import type { Comment } from "@/lib/schemas";
 
 const AUTHOR_STYLE: Record<string, string> = {
@@ -173,6 +174,7 @@ function getCommentStatus(comment: {
 }
 
 export function TaskDetailPanel() {
+  const demoMode = isPublicDemoMode();
   const selectedTaskId = useDashboardStore((s) => s.selectedTaskId);
     const setSelectedTaskId = useDashboardStore((s) => s.setSelectedTaskId);
   const queryClient = useQueryClient();
@@ -276,7 +278,7 @@ export function TaskDetailPanel() {
               </p>
             )}
 
-              {selectedTask.status === "DONE" && !selectedTask.archivedAt && (
+              {!demoMode && selectedTask.status === "DONE" && !selectedTask.archivedAt && (
                 <div className="flex items-center gap-2 pt-1">
                   <button
                     disabled={isArchiving}
@@ -359,39 +361,45 @@ export function TaskDetailPanel() {
               </span>
             </div>
 
-            <form
-              className="mb-3 space-y-2"
-              onSubmit={(event) => {
-                event.preventDefault();
-                if (!newComment.trim()) return;
-                addCommentMutation.mutate();
-              }}
-            >
-              <label className="block text-[10px] uppercase tracking-wider text-slate-500">
-                Leave a note for {selectedTask.assignedAgent?.name ?? "the assigned agent"}
-              </label>
-              <textarea
-                value={newComment}
-                onChange={(event) => setNewComment(event.target.value)}
-                rows={3}
-                placeholder="Write a comment for this card..."
-                className="w-full resize-y rounded-md border border-surface-700 bg-surface-800 px-3 py-2 text-xs text-slate-200 placeholder:text-slate-500 focus:border-cyan-500/50 focus:outline-none"
-              />
-              <div className="flex items-center justify-between gap-2">
-                {addCommentMutation.isError ? (
-                  <p className="text-[10px] text-rose-300">Failed to send comment. Try again.</p>
-                ) : (
-                  <p className="text-[10px] text-slate-500">Comment will be attached to this task thread.</p>
-                )}
-                <button
-                  type="submit"
-                  disabled={addCommentMutation.isPending || !newComment.trim()}
-                  className="rounded border border-cyan-500/40 bg-cyan-500/20 px-3 py-1.5 text-[11px] font-semibold text-cyan-200 transition hover:bg-cyan-500/30 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {addCommentMutation.isPending ? "Sending..." : "Post Comment"}
-                </button>
+            {demoMode ? (
+              <div className="mb-3 rounded border border-surface-700 bg-surface-800 px-3 py-2 text-[11px] text-slate-400">
+                Comments are read-only in the static demo.
               </div>
-            </form>
+            ) : (
+              <form
+                className="mb-3 space-y-2"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  if (!newComment.trim()) return;
+                  addCommentMutation.mutate();
+                }}
+              >
+                <label className="block text-[10px] uppercase tracking-wider text-slate-500">
+                  Leave a note for {selectedTask.assignedAgent?.name ?? "the assigned agent"}
+                </label>
+                <textarea
+                  value={newComment}
+                  onChange={(event) => setNewComment(event.target.value)}
+                  rows={3}
+                  placeholder="Write a comment for this card..."
+                  className="w-full resize-y rounded-md border border-surface-700 bg-surface-800 px-3 py-2 text-xs text-slate-200 placeholder:text-slate-500 focus:border-cyan-500/50 focus:outline-none"
+                />
+                <div className="flex items-center justify-between gap-2">
+                  {addCommentMutation.isError ? (
+                    <p className="text-[10px] text-rose-300">Failed to send comment. Try again.</p>
+                  ) : (
+                    <p className="text-[10px] text-slate-500">Comment will be attached to this task thread.</p>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={addCommentMutation.isPending || !newComment.trim()}
+                    className="rounded border border-cyan-500/40 bg-cyan-500/20 px-3 py-1.5 text-[11px] font-semibold text-cyan-200 transition hover:bg-cyan-500/30 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {addCommentMutation.isPending ? "Sending..." : "Post Comment"}
+                  </button>
+                </div>
+              </form>
+            )}
 
             {commentsLoading && <SkeletonList rows={3} />}
             {commentsError && <ErrorMessage message="Failed to load comments" />}

@@ -16,7 +16,7 @@ interface AgentInspectorProps {
   avatarUrl?: string;
   generating: boolean;
   avatarError?: string | null;
-  onGenerateAvatar: () => void;
+  onGenerateAvatar?: () => void;
 }
 
 export function AgentInspector({
@@ -94,14 +94,20 @@ export function AgentInspector({
         <p className="text-right text-slate-100">{agent.heartbeat ?? "n/a"}</p>
       </div>
 
-      <button
-        type="button"
-        onClick={onGenerateAvatar}
-        disabled={generating}
-        className="rounded border border-cyan-400/50 bg-cyan-500/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-cyan-200 transition hover:bg-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        {generating ? "Generating... (may take ~15s)" : "Generate Avatar"}
-      </button>
+      {onGenerateAvatar ? (
+        <button
+          type="button"
+          onClick={onGenerateAvatar}
+          disabled={generating}
+          className="rounded border border-cyan-400/50 bg-cyan-500/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-cyan-200 transition hover:bg-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {generating ? "Generating... (may take ~15s)" : "Generate Avatar"}
+        </button>
+      ) : (
+        <p className="rounded border border-surface-700 bg-surface-800 px-3 py-2 text-[11px] uppercase tracking-wide text-slate-400">
+          Avatar locked in static demo
+        </p>
+      )}
       {avatarError && (
         <p className="rounded border border-red-500/30 bg-red-500/10 px-2 py-1 text-[10px] text-red-400">{avatarError}</p>
       )}

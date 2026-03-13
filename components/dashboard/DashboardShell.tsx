@@ -9,6 +9,7 @@ import { SummaryBar } from "@/components/dashboard/SummaryBar";
 import { FiltersBar } from "@/components/dashboard/FiltersBar";
 import { cn } from "@/lib/utils/cn";
 import { useOnboardingState } from "@/lib/utils/useOnboardingState";
+import { isPublicDemoMode } from "@/lib/utils/demoMode";
 
 interface DashboardShellProps {
   children: React.ReactNode;
@@ -25,6 +26,7 @@ const NAV_ITEMS = [
 export function DashboardShell({ children, showFilters = true, topBar }: DashboardShellProps) {
   const pathname = usePathname();
   const { isReady } = useOnboardingState();
+  const demoMode = isPublicDemoMode();
 
   useEffect(() => {
     if (!isReady) return;
@@ -71,6 +73,12 @@ export function DashboardShell({ children, showFilters = true, topBar }: Dashboa
       </header>
 
       <div className="shrink-0 px-6 pt-4">
+        {demoMode && (
+          <div className="mb-3 rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-4 py-2 text-xs text-cyan-100">
+            <span className="font-semibold uppercase tracking-[0.14em] text-cyan-300">Read-only demo</span>
+            <span className="ml-2 text-slate-300">This workspace is a seeded snapshot from the isolated lucyweb demo database.</span>
+          </div>
+        )}
         <SummaryBar />
         {topBar}
         {showFilters && <FiltersBar />}

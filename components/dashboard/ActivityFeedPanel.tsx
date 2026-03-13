@@ -10,12 +10,26 @@ import { useDashboardStore } from "@/store/dashboardStore";
 import { Card, SkeletonList, EmptyState, ErrorMessage } from "@/components/ui";
 import { fromNow } from "@/lib/utils/formatDate";
 import { cn } from "@/lib/utils/cn";
+import { getRealtimeRefetchInterval } from "@/lib/utils/demoMode";
 
 export function ActivityFeedPanel() {
   const activityLimit = useDashboardStore((s) => s.activityLimit);
   const selectedAgentId = useDashboardStore((s) => s.selectedAgentId);
   const selectedTaskId = useDashboardStore((s) => s.selectedTaskId);
   const searchQuery = useDashboardStore((s) => s.searchQuery);
+  const setSelectedTaskId = useDashboardStore((s) => s.setSelectedTaskId);
+  const setSlaFocusedTaskId = useDashboardStore((s) => s.setSlaFocusedTaskId);
+  const setSelectedAgentId = useDashboardStore((s) => s.setSelectedAgentId);
+  const setTaskStatusFilter = useDashboardStore((s) => s.setTaskStatusFilter);
+  const setSearchQuery = useDashboardStore((s) => s.setSearchQuery);
+
+  const handleSlaAlertClick = (taskId: string) => {
+    setSelectedAgentId(null);
+    setTaskStatusFilter("ALL");
+    setSearchQuery("");
+    setSelectedTaskId(taskId);
+    setSlaFocusedTaskId(taskId);
+  };
 
   const { data: activity, isLoading, isError } = useQuery({
     queryKey: ["activity", { limit: activityLimit, agentId: selectedAgentId, taskId: selectedTaskId }],
@@ -25,13 +39,13 @@ export function ActivityFeedPanel() {
         agentId: selectedAgentId ?? undefined,
         taskId: selectedTaskId ?? undefined,
       }),
-    refetchInterval: 10_000,
+    refetchInterval: getRealtimeRefetchInterval(10_000),
   });
 
   const { data: slaAlerts = [] } = useQuery<SlaTaskAlert[]>({
     queryKey: ["sla-alerts"],
     queryFn: getSlaAlerts,
-    refetchInterval: 60_000,
+    refetchInterval: getRealtimeRefetchInterval(60_000),
   });
 
   const normalizedSearch = searchQuery.trim().toLowerCase();
@@ -80,7 +94,12 @@ export function ActivityFeedPanel() {
             const oldest = alert.breachedComments[0];
             const count = alert.breachedComments.length;
             return (
-              <div key={alert.taskId} className="relative group/slarow flex items-start gap-2">
+              <button
+                key={alert.taskId}
+                type="button"
+                onClick={() => handleSlaAlertClick(alert.taskId)}
+                className="relative group/slarow flex w-full items-start gap-2 rounded border border-transparent px-1 py-1 text-left transition hover:border-red-500/30 hover:bg-red-950/20"
+              >
                 <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse shrink-0 mt-1" />
                 <div className="flex-1 min-w-0">
                   <p className="text-[11px] text-slate-200 truncate">{alert.taskTitle}</p>
@@ -98,7 +117,7 @@ export function ActivityFeedPanel() {
                     </p>
                   ))}
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>

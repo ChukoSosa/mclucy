@@ -4,6 +4,7 @@ import { apiErrorResponse } from "@/app/api/server/api-error";
 import { emitEvent } from "@/app/api/server/event-bus";
 import { activityService } from "@/app/api/server/activity-service";
 import { dispatchCommentReview } from "@/app/api/server/comment-automator";
+import { isMissionControlDemoMode, demoReadOnlyResponse } from "@/app/api/server/demo-mode";
 
 function clampLimit(value: string | null, fallback = 50) {
   const n = value ? Number.parseInt(value, 10) : fallback;
@@ -44,6 +45,10 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    if (isMissionControlDemoMode()) {
+      return demoReadOnlyResponse();
+    }
+
     const { id } = await params;
     const payload = await request.json();
 

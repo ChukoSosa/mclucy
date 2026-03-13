@@ -6,8 +6,8 @@ import type { ReactNode } from "react";
 
 const NAV_LINKS = [
   { href: "/web/landing", label: "Landing" },
-  { href: "/web/welcome", label: "Manual" },
   { href: "/web/terms", label: "Story" },
+  { href: "/web/welcome", label: "Manual" },
   { href: "/web/payment", label: "Get MC Lucy" },  
 ];
 

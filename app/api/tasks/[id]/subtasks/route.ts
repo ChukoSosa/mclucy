@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/api/server/prisma";
 import { apiErrorResponse } from "@/app/api/server/api-error";
+import { isMissionControlDemoMode, demoReadOnlyResponse } from "@/app/api/server/demo-mode";
 
 export async function GET(
   _request: NextRequest,
@@ -29,6 +30,10 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    if (isMissionControlDemoMode()) {
+      return demoReadOnlyResponse();
+    }
+
     const { id } = await params;
     const task = await prisma.task.findUnique({ where: { id } });
     if (!task) {

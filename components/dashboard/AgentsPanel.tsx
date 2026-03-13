@@ -9,6 +9,7 @@ import { Card, StatusBadge, SkeletonList, EmptyState, ErrorMessage } from "@/com
 import { cn } from "@/lib/utils/cn";
 import { fromNow } from "@/lib/utils/formatDate";
 import type { Agent } from "@/types";
+import { getRealtimeRefetchInterval } from "@/lib/utils/demoMode";
 
 interface AgentsPanelProps {
   onSelectAgent: (agent: Agent) => void;
@@ -20,7 +21,7 @@ export function AgentsPanel({ onSelectAgent }: AgentsPanelProps) {
   const { data: agents, isLoading, isError } = useQuery({
     queryKey: ["agents"],
     queryFn: getAgents,
-    refetchInterval: 15_000,
+    refetchInterval: getRealtimeRefetchInterval(15_000),
   });
 
   return (

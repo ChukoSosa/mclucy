@@ -25,11 +25,13 @@ import {
   saveAvatarMappingToStorage,
 } from "@/lib/office/avatarGenerator";
 import type { Agent, Task } from "@/types";
+import { getRealtimeRefetchInterval, isPublicDemoMode } from "@/lib/utils/demoMode";
 
 const EMPTY_AGENTS: Agent[] = [];
 const EMPTY_TASKS: Task[] = [];
 
 export default function OfficePage() {
+  const demoMode = isPublicDemoMode();
   const [generatingAgentId, setGeneratingAgentId] = useState<string | null>(null);
   const [avatarError, setAvatarError] = useState<string | null>(null);
 
@@ -45,13 +47,13 @@ export default function OfficePage() {
   const { data: agentsData, isLoading: agentsLoading } = useQuery({
     queryKey: ["office-agents"],
     queryFn: getAgents,
-    refetchInterval: 12_000,
+    refetchInterval: getRealtimeRefetchInterval(12_000),
   });
 
   const { data: tasksData } = useQuery({
     queryKey: ["office-tasks"],
     queryFn: () => getTasks(),
-    refetchInterval: 12_000,
+    refetchInterval: getRealtimeRefetchInterval(12_000),
   });
 
   const agents = agentsData ?? EMPTY_AGENTS;
@@ -189,7 +191,7 @@ export default function OfficePage() {
             avatarUrl={selected ? avatarMapping[selected.agent.id] ?? resolveAgentAvatarUrl(selected.agent) : undefined}
             generating={generatingAgentId === selected?.agent.id}
             avatarError={avatarError}
-            onGenerateAvatar={handleGenerateAvatar}
+            onGenerateAvatar={demoMode ? undefined : handleGenerateAvatar}
           />
         </section>
 

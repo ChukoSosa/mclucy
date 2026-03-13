@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getSupervisorKpis } from "@/lib/api/kpis";
 import { Card, Skeleton, EmptyState, ErrorMessage } from "@/components/ui";
+import { getRealtimeRefetchInterval } from "@/lib/utils/demoMode";
 
 function formatKpiValue(value: unknown): string {
   if (value === null || value === undefined) return "—";
@@ -26,7 +27,7 @@ export function KpiPanel() {
   const { data: kpis, isLoading, isError } = useQuery({
     queryKey: ["kpis"],
     queryFn: getSupervisorKpis,
-    refetchInterval: 30_000,
+    refetchInterval: getRealtimeRefetchInterval(30_000),
   });
 
   const entries = kpis ? Object.entries(kpis) : [];
