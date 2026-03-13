@@ -12,6 +12,18 @@ import { priorityLabel, priorityVariant } from "@/lib/utils/formatStatus";
 import { getRealtimeRefetchInterval } from "@/lib/utils/demoMode";
 import { getSlaAlerts } from "@/lib/api/sla";
 
+const STATUS_SORT_ORDER: Record<string, number> = {
+  BLOCKED: 1,
+  REVIEW: 2,
+  IN_PROGRESS: 3,
+  BACKLOG: 4,
+  DONE: 5,
+};
+
+function normalizeTaskStatus(status: string | null | undefined): string {
+  return (status ?? "").trim().toUpperCase().replace(/\s+/g, "_");
+}
+
 export function TasksPanel() {
   const selectedTaskId = useDashboardStore((s) => s.selectedTaskId);
   const setSelectedTaskId = useDashboardStore((s) => s.setSelectedTaskId);
@@ -45,7 +57,7 @@ export function TasksPanel() {
       task.ownerAgentId === selectedAgentId;
 
     const matchesStatus =
-      taskStatusFilter === "ALL" || (task.status ?? "UNKNOWN").toUpperCase() === taskStatusFilter;
+      taskStatusFilter === "ALL" || normalizeTaskStatus(task.status) === taskStatusFilter;
 
     const searchText = [
       task.title,
@@ -60,6 +72,31 @@ export function TasksPanel() {
 
     const matchesSearch = !normalizedSearch || searchText.includes(normalizedSearch);
     return matchesAgent && matchesStatus && matchesSearch;
+  }).sort((a, b) => {
+    const aStatus = normalizeTaskStatus(a.status);
+    const bStatus = normalizeTaskStatus(b.status);
+
+    const aRank = STATUS_SORT_ORDER[aStatus] ?? Number.MAX_SAFE_INTEGER;
+    const bRank = STATUS_SORT_ORDER[bStatus] ?? Number.MAX_SAFE_INTEGER;
+    if (aRank !== bRank) {
+      return aRank - bRank;
+    }
+
+    // Lower number means higher priority (P1 before P2).
+    const aPriority = a.priority ?? Number.MAX_SAFE_INTEGER;
+    const bPriority = b.priority ?? Number.MAX_SAFE_INTEGER;
+    if (aPriority !== bPriority) {
+      return aPriority - bPriority;
+    }
+
+    // Keep ordering deterministic when status and priority are equal.
+    const aUpdated = a.updatedAt ? Date.parse(a.updatedAt) : 0;
+    const bUpdated = b.updatedAt ? Date.parse(b.updatedAt) : 0;
+    if (aUpdated !== bUpdated) {
+      return bUpdated - aUpdated;
+    }
+
+    return a.title.localeCompare(b.title);
   });
 
   return (

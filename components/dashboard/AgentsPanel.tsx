@@ -43,7 +43,7 @@ export function AgentsPanel({ onSelectAgent }: AgentsPanelProps) {
                 className={cn(
                   "w-full text-left rounded-md border p-3 space-y-1.5 transition-colors",
                   isSelected
-                    ? "border-cyan-500/50 bg-cyan-500/10"
+                    ? "border-2 border-green-500/70 bg-green-500/10"
                     : "border-surface-700 bg-surface-800 hover:border-surface-600 hover:bg-surface-700",
                 )}
               >
