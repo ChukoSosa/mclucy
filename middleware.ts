@@ -1,6 +1,5 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { randomUUID } from "crypto";
 import { authenticateRequest, hasRequiredRole, type AuthRole } from "@/lib/security/auth";
 import { checkRateLimit } from "@/lib/security/rate-limit";
 
@@ -33,7 +32,7 @@ export async function middleware(request: NextRequest) {
   const method = request.method.toUpperCase();
   const pathname = request.nextUrl.pathname;
   const isMutatingMethod = MUTATING_METHODS.has(method);
-  const requestId = request.headers.get("x-request-id") ?? randomUUID();
+  const requestId = request.headers.get("x-request-id") ?? crypto.randomUUID();
   const baseRequestHeaders = new Headers(request.headers);
   baseRequestHeaders.set("x-request-id", requestId);
 
