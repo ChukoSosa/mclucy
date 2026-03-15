@@ -100,23 +100,6 @@ export const agentService = {
       },
     });
 
-    await activityService.log({
-      kind: "agent",
-      action: "agent.avatar.updated",
-      summary: `${agent.name} avatar updated`,
-      actor: {
-        type: "human",
-        id: "operator",
-        name: "Operator",
-      },
-      agentId: agent.id,
-      payload: {
-        variant: payload.variant ?? "pixel-random",
-        prompt: payload.prompt ?? null,
-        traits: payload.traits ?? null,
-      },
-    });
-
     return agent;
   },
 };
