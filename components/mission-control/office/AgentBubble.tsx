@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, useAnimationControls } from "framer-motion";
 import Image from "next/image";
 import type { Agent, Task } from "@/types";
 import type { NormalizedSceneState } from "@/lib/office/sceneStateNormalizer";
@@ -33,6 +33,21 @@ function AgentBubbleComponent({
   onReachedPosition,
 }: AgentBubbleProps) {
   const [imageFailed, setImageFailed] = useState(false);
+  const bubbleControls = useAnimationControls();
+
+  const triggerBounce = () => {
+    bubbleControls.stop();
+    bubbleControls.set({ y: 0, scale: 1 });
+    void bubbleControls.start({
+      y: [0, -8, 0, -3, 0],
+      scale: [1, 1.04, 0.98, 1.01, 1],
+      transition: {
+        duration: 0.42,
+        times: [0, 0.24, 0.56, 0.78, 1],
+        ease: "easeOut",
+      },
+    });
+  };
 
   useEffect(() => {
     setImageFailed(false);
@@ -46,12 +61,17 @@ function AgentBubbleComponent({
       animate={{ left: `${x}%`, top: `${y}%` }}
       transition={{ type: "spring", stiffness: 120, damping: 18, mass: 0.8 }}
       onAnimationComplete={() => onReachedPosition(agent.id)}
-      onClick={() => onSelectAgent(agent.id)}
+      onClick={() => {
+        triggerBounce();
+        onSelectAgent(agent.id);
+      }}
       aria-label={`Open inspector for ${agent.name}`}
     >
-      <div
+      <motion.div
+        initial={{ y: 0, scale: 1 }}
+        animate={bubbleControls}
         className={cn(
-          "relative h-14 w-14 overflow-hidden rounded-full border border-surface-700 bg-surface-900/95",
+          "relative h-14 w-14 overflow-hidden rounded-full border-2 border-surface-700 bg-surface-900/95",
           state.ringClassName,
           state.pulse && "animate-pulse-slow",
         )}
@@ -71,7 +91,7 @@ function AgentBubbleComponent({
             {agent.name.slice(0, 2).toUpperCase()}
           </div>
         )}
-      </div>
+      </motion.div>
 
       <div className="pointer-events-none absolute left-1/2 top-full z-30 mt-2 hidden w-64 -translate-x-1/2 rounded border border-surface-700 bg-surface-900/95 p-2 text-left text-[11px] text-slate-200 shadow-2xl group-hover:block">
         <p className="font-semibold text-cyan-200">{agent.name}</p>
