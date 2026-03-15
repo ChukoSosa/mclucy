@@ -10,6 +10,8 @@ export interface OfficeAgentView {
   task: Task | null;
   x: number;
   y: number;
+  offsetX?: number;
+  offsetY?: number;
   avatarUrl?: string;
   state: NormalizedSceneState;
 }
@@ -41,6 +43,8 @@ function OfficeSceneComponent({ agents, onSelectAgent, onReachedPosition }: Offi
             task={item.task}
             x={item.x}
             y={item.y}
+            offsetX={item.offsetX}
+            offsetY={item.offsetY}
             avatarUrl={item.avatarUrl}
             state={item.state}
             onSelectAgent={onSelectAgent}

@@ -12,6 +12,8 @@ interface AgentBubbleProps {
   task: Task | null;
   x: number;
   y: number;
+  offsetX?: number;
+  offsetY?: number;
   avatarUrl?: string;
   state: NormalizedSceneState;
   onSelectAgent: (agentId: string) => void;
@@ -23,6 +25,8 @@ function AgentBubbleComponent({
   task,
   x,
   y,
+  offsetX = 0,
+  offsetY = 0,
   avatarUrl,
   state,
   onSelectAgent,
@@ -38,7 +42,7 @@ function AgentBubbleComponent({
     <motion.button
       type="button"
       className="group absolute z-20"
-      style={{ transform: "translate(-50%, -50%)" }}
+      style={{ transform: `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px))` }}
       animate={{ left: `${x}%`, top: `${y}%` }}
       transition={{ type: "spring", stiffness: 120, damping: 18, mass: 0.8 }}
       onAnimationComplete={() => onReachedPosition(agent.id)}
