@@ -14,9 +14,9 @@ function getStateBorderClassName(state: NormalizedSceneState): string {
     case "idle":
       return "border-amber-300";
     case "reviewing":
-      return "border-cyan-300";
+      return "border-yellow-400";
     case "blocked":
-      return "border-accent-amber";
+      return "border-accent-red";
     case "offline":
       return "border-slate-500";
     case "critical":
