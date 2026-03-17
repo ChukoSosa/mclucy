@@ -57,7 +57,8 @@ export function DashboardShell({ children, showFilters = true, topBar }: Dashboa
   const [setupModalMode, setSetupModalMode] = useState<"first-run" | "settings">("first-run");
   const pendingPageLabel = getPendingPageLabel(pendingHref);
   const hasConfiguredOutputFolder = outputFolderPath.trim().length > 0;
-  const requiresInitialSetup = !hasSeenOnboarding || !hasConfiguredOutputFolder;
+  // Output folder setup is only relevant on localhost — in demo/mock mode agents don't produce real outputs.
+  const requiresInitialSetup = !demoMode && (!hasSeenOnboarding || !hasConfiguredOutputFolder);
   const isWorkspaceReady = isReady && isOutputPreferenceReady;
   const shouldBlockNavigation = isWorkspaceReady && requiresInitialSetup;
 
