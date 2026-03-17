@@ -2,12 +2,11 @@ import "server-only";
 
 import { prisma } from "./prisma";
 
-const SYSTEM_OPERATOR_ID = "operator-root";
 export const DEFAULT_OUTPUT_FOLDER = "mcmonkeys";
 
 export async function getOutputFolderPath(): Promise<string> {
-  const operator = await prisma.operator.findUnique({
-    where: { id: SYSTEM_OPERATOR_ID },
+  const operator = await prisma.operator.findFirst({
+    orderBy: { createdAt: "asc" },
     select: { preferences: true },
   });
 
@@ -19,22 +18,26 @@ export async function getOutputFolderPath(): Promise<string> {
 }
 
 export async function setOutputFolderPath(folderPath: string): Promise<void> {
-  const existing = await prisma.operator.findUnique({
-    where: { id: SYSTEM_OPERATOR_ID },
-    select: { preferences: true },
+  const existing = await prisma.operator.findFirst({
+    orderBy: { createdAt: "asc" },
+    select: { id: true, preferences: true },
   });
   const currentPrefs = (existing?.preferences as Record<string, unknown>) ?? {};
+  const nextPreferences = { ...currentPrefs, outputFolderPath: folderPath };
 
-  await prisma.operator.upsert({
-    where: { id: SYSTEM_OPERATOR_ID },
-    create: {
-      id: SYSTEM_OPERATOR_ID,
+  if (existing?.id) {
+    await prisma.operator.update({
+      where: { id: existing.id },
+      data: { preferences: nextPreferences },
+    });
+    return;
+  }
+
+  await prisma.operator.create({
+    data: {
       name: "Operator",
       email: "operator@mclucy.local",
-      preferences: { ...currentPrefs, outputFolderPath: folderPath },
-    },
-    update: {
-      preferences: { ...currentPrefs, outputFolderPath: folderPath },
+      preferences: nextPreferences,
     },
   });
 }

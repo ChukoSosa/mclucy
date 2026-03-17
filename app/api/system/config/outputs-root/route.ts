@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getOutputFolderPath, setOutputFolderPath } from "@/app/api/server/system-config";
-import { validateOutputFolderPath } from "@/lib/utils/useOutputFolderPreference";
+import { validateOutputFolderPath } from "@/lib/utils/outputFolderPathValidation";
 
 export async function GET() {
   const outputFolderPath = await getOutputFolderPath();
