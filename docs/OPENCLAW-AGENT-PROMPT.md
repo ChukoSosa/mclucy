@@ -27,10 +27,10 @@ Before running install scripts, download and verify the package:
 
 ```bash
 # Primary endpoint
-curl -L https://mcmonkeys.up.railway.app/downloads/mclucy-latest.zip -o mclucy-latest.zip
+curl -L https://mcmonkeys.up.railway.app/downloads/mcmonkeys-latest.zip -o mcmonkeys-latest.zip
 
 # Verify download succeeded and file is not empty
-ls -lh mclucy-latest.zip
+ls -lh mcmonkeys-latest.zip
 ```
 
 If the download hangs for more than 60 seconds or the file size is 0:
