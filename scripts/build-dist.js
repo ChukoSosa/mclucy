@@ -86,6 +86,7 @@ run(
   {
     env: {
       ...process.env,
+      BUILD_DIST_STANDALONE: "true",
       NODE_ENV: "production",
       NEXT_PUBLIC_RUNTIME_PROFILE: "install-local",
       APP_ONLY_INSTALL: "true",

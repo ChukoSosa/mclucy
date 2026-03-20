@@ -1,5 +1,11 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {};
+const isDistBuild = process.env.BUILD_DIST_STANDALONE === "true";
+
+const nextConfig: NextConfig = isDistBuild
+	? {
+			output: "standalone",
+		}
+	: {};
 
 export default nextConfig;
