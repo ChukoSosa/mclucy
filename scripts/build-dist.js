@@ -20,6 +20,7 @@ const path = require("path");
 
 const ROOT = path.join(__dirname, "..");
 const DIST = path.join(ROOT, "dist");
+const NEXT_DIST_DIR = path.join(ROOT, ".next-dist");
 const ZIP_DIR = path.join(ROOT, "public", "downloads");
 const ZIP_OUT = path.join(ZIP_DIR, "mcmonkeys-latest.zip");
 const CANONICAL_DOCS = [
@@ -75,6 +76,7 @@ function copyFile(src, dest) {
 // ── Step 1: Clean previous dist ────────────────────────────────────────────
 step("1/7", "Cleaning previous dist");
 if (fs.existsSync(DIST)) fs.rmSync(DIST, { recursive: true, force: true });
+if (fs.existsSync(NEXT_DIST_DIR)) fs.rmSync(NEXT_DIST_DIR, { recursive: true, force: true });
 fs.mkdirSync(DIST, { recursive: true });
 ok("dist/ cleaned");
 
@@ -96,9 +98,9 @@ run(
 );
 
 // Validate standalone output exists
-const standaloneDir = path.join(ROOT, ".next", "standalone");
+const standaloneDir = path.join(NEXT_DIST_DIR, "standalone");
 if (!fs.existsSync(standaloneDir)) {
-  fail(".next/standalone/ not found. Make sure next.config.ts has output: 'standalone'.");
+  fail(".next-dist/standalone/ not found. Make sure next.config.ts enables standalone mode for dist builds.");
 }
 
 // ── Step 3: Assemble distribution folder ───────────────────────────────────
@@ -118,7 +120,7 @@ if (fs.existsSync(webDistDir)) {
 }
 
 // 3b. Static assets (.next/static/ → dist/.next/static/)
-const nextStaticSrc = path.join(ROOT, ".next", "static");
+const nextStaticSrc = path.join(NEXT_DIST_DIR, "static");
 const nextStaticDest = path.join(DIST, ".next", "static");
 copyDir(nextStaticSrc, nextStaticDest);
 ok(".next/static/ copied");

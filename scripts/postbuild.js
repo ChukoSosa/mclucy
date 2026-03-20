@@ -9,7 +9,7 @@ if (!shouldBuildDist) {
   process.exit(0);
 }
 
-const result = spawnSync(process.execPath, ["scripts/build-dist.js", "--skip-next-build"], {
+const result = spawnSync(process.execPath, ["scripts/build-dist.js"], {
   stdio: "inherit",
   env: process.env,
 });
