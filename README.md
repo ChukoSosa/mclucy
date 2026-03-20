@@ -188,6 +188,41 @@ El usuario final recibe el ZIP, corre el instalador, y MC-MONKEYS levanta autom�
 
 > El ZIP no va en git (`.gitignore`). Generarlo manualmente antes de cada deploy.
 
+### Deploy en Railway (web + demo visibles)
+
+Para evitar que `/web/*` quede bloqueado en cloud, usar perfil `online-demo` y comandos de build/start cloud-safe:
+
+```bash
+# Build Command
+npm run build
+
+# Start Command
+npm run start
+```
+
+Variables mínimas recomendadas en Railway:
+
+```env
+NEXT_PUBLIC_RUNTIME_PROFILE=online-demo
+DATABASE_URL=postgresql://...
+NEXT_PUBLIC_MISSION_CONTROL_API_BASE_URL=https://<tu-servicio>.up.railway.app
+NEXT_PUBLIC_ENABLE_PAYMENT_ACTIVATION=true
+```
+
+Opcionales:
+
+```env
+LEMON_SQUEEZY_API_KEY=...
+NEXT_PUBLIC_ALLOW_LEGACY_PROFILE_FALLBACK=false
+APP_ONLY_INSTALL=false
+NEXT_PUBLIC_USE_MOCK_DATA=true
+```
+
+Notas:
+- `npm run build` ya no empaqueta ZIP automáticamente en postbuild.
+- El ZIP instalable se genera solo con `npm run dist:build`.
+- `npm run start` usa `PORT` dinámico (Railway) y fallback a `3001` en local.
+
 ### Rutas disponibles
 
 | Ruta | Descripción |
