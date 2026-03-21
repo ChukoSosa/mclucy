@@ -40,6 +40,7 @@ if not exist ".env" (
   ) else (
     (
       echo DATABASE_URL="postgresql://postgres:postgres@localhost:5432/mission_control"
+      echo MISSION_CONTROL_API_BASE_URL="http://localhost:3001"
       echo APP_ONLY_INSTALL="true"
       echo NEXT_PUBLIC_MISSION_CONTROL_API_BASE_URL="http://localhost:3001"
       echo NEXT_PUBLIC_USE_MOCK_DATA="false"
@@ -74,8 +75,8 @@ if not exist "_setup\node_modules" (
     echo   "name": "mclucy-setup",
     echo   "private": true,
     echo   "dependencies": {
-    echo     "prisma": "^5",
-    echo     "@prisma/client": "^5",
+    echo     "prisma": "5.18.0",
+    echo     "@prisma/client": "5.18.0",
     echo     "tsx": "^4"
     echo   }
     echo }

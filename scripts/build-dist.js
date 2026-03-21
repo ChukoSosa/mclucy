@@ -91,6 +91,8 @@ run(
       BUILD_DIST_STANDALONE: "true",
       NODE_ENV: "production",
       NEXT_PUBLIC_RUNTIME_PROFILE: "install-local",
+      MISSION_CONTROL_API_BASE_URL: "http://localhost:3001",
+      NEXT_PUBLIC_MISSION_CONTROL_API_BASE_URL: "http://localhost:3001",
       APP_ONLY_INSTALL: "true",
       NEXT_PUBLIC_APP_ONLY_INSTALL: "true",
     },
@@ -186,6 +188,7 @@ fs.writeFileSync(
   [
     'DATABASE_URL="postgresql://postgres:postgres@localhost:5432/mission_control"',
     'NEXT_PUBLIC_RUNTIME_PROFILE="install-local"',
+    'MISSION_CONTROL_API_BASE_URL="http://localhost:3001"',
     'APP_ONLY_INSTALL="true"',
     'NEXT_PUBLIC_APP_ONLY_INSTALL="true"',
     'NEXT_PUBLIC_MISSION_CONTROL_API_BASE_URL="http://localhost:3001"',

@@ -56,6 +56,7 @@ if [ ! -f ".env" ]; then
     fi
   else
     echo 'DATABASE_URL="postgresql://postgres:postgres@localhost:5432/mission_control"' > .env
+    echo 'MISSION_CONTROL_API_BASE_URL="http://localhost:3001"' >> .env
     echo 'APP_ONLY_INSTALL="true"' >> .env
     echo 'NEXT_PUBLIC_MISSION_CONTROL_API_BASE_URL="http://localhost:3001"' >> .env
     echo 'NEXT_PUBLIC_USE_MOCK_DATA="false"' >> .env
@@ -88,8 +89,8 @@ if [ ! -d "_setup/node_modules" ]; then
   "name": "mclucy-setup",
   "private": true,
   "dependencies": {
-    "prisma": "^5",
-    "@prisma/client": "^5",
+    "prisma": "5.18.0",
+    "@prisma/client": "5.18.0",
     "tsx": "^4"
   }
 }
